@@ -4,6 +4,7 @@ import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { FacultyDto } from './dto/faculty.dto';
+import { PaginatedDto } from 'src/modules/faculty/dto/paginated.dto';
 
 @Controller('faculty')
 @ApiTags('Faculty')
@@ -21,7 +22,7 @@ export class FacultyController {
 
   @Get()
   @ApiOperation({ summary: 'Find all faculties' })
-  async findAll(): Promise<FacultyDto[]> {
+  async findAll(): Promise<PaginatedDto<FacultyDto[]>> {
     // @ts-ignore
     return this.facultyService.findAll();
   }
