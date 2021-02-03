@@ -8,8 +8,8 @@ import { UserRepository } from './user.repository';
 @Injectable()
 export class UserService {
   constructor(
-    private userRepository: UserRepository,
-    private globalHelper: GlobalHelper,
+    private readonly userRepository: UserRepository,
+    private readonly globalHelper: GlobalHelper,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {

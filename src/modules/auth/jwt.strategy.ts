@@ -9,8 +9,8 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private userService: UserService,
-    private configService: ConfigService,
+    private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -22,6 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: TokenPayloadDto): Promise<User | null> {
     let rs = null;
 
+    // Check user exists
     const userFind = this.userService.findOne(payload.sub);
     if (!userFind) {
       return rs;
