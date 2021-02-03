@@ -1,26 +1,85 @@
 import { Injectable } from '@nestjs/common';
+import { GlobalHelper } from '../helper/global.helper';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
+import { Faculty } from './entities/faculty.entity';
+import { FacultyRepository } from './faculty.repository';
 
 @Injectable()
 export class FacultyService {
-  create(createFacultyDto: CreateFacultyDto) {
-    return 'This action adds a new faculty';
+  constructor(
+    private facultyRepository: FacultyRepository,
+    private globalHelper: GlobalHelper,
+  ) {}
+
+  async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
+    const facultyCreate = await this.facultyRepository.create(createFacultyDto);
+    facultyCreate.createAt = new Date();
+    return await this.facultyRepository.save(facultyCreate);
   }
 
-  findAll() {
-    return `This action returns all faculty`;
+  // This action returns all faculty
+  async findAll(): Promise<Faculty[]> {
+    return await this.facultyRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} faculty`;
+  // This action returns a #${id} faculty
+  async findOne(id: number): Promise<Faculty | null> {
+    let rs: Faculty | null = null;
+
+    const facultyFind = await this.facultyRepository.findOne(id);
+    if (!facultyFind) {
+      return rs;
+    }
+
+    return facultyFind;
   }
 
-  update(id: number, updateFacultyDto: UpdateFacultyDto) {
-    return `This action updates a #${id} faculty`;
+  // This action updates a #${id} faculty
+  async update(
+    id: number,
+    updateFacultyDto: UpdateFacultyDto,
+  ): Promise<Faculty | null> {
+    let rs: Faculty | null = null;
+    if (this.globalHelper.checkObjectIsEmpty(updateFacultyDto)) {
+      return rs;
+    }
+    // Check w/e faculty exist
+    const facultyFind = await this.findOne(id);
+    if (!facultyFind) {
+      return rs;
+    }
+    // Update
+    const updateResult = await this.facultyRepository.update(
+      id,
+      updateFacultyDto,
+    );
+    if (updateResult.affected != 1) {
+      return rs;
+    }
+
+    const updatedFaculty = await this.facultyRepository.findOne(id);
+    if (!updatedFaculty) {
+      return rs;
+    }
+    rs = updatedFaculty;
+    return rs;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} faculty`;
+  // This action removes a #${id} faculty
+  async delete(id: number): Promise<Boolean> {
+    let rs = false;
+    // Check w/e faculty exist
+    const facultyFind = await this.facultyRepository.findOne(id);
+    if (!facultyFind) {
+      return rs;
+    }
+    // Delete
+    const deletedResult = await this.facultyRepository.delete(facultyFind);
+    if (deletedResult.affected != 1) {
+      rs = true;
+      return rs;
+    }
+    return rs;
   }
 }
