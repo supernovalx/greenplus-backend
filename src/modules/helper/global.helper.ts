@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class GlobalHelper {
   private bcryptRounds: number;
-  constructor(private configService: ConfigService) {
+  constructor(private readonly configService: ConfigService) {
     this.bcryptRounds =
       Number(configService.get<number>('BCRYPT_ROUNDS')) || 11;
   }

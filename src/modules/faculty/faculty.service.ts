@@ -8,8 +8,8 @@ import { FacultyRepository } from './faculty.repository';
 @Injectable()
 export class FacultyService {
   constructor(
-    private facultyRepository: FacultyRepository,
-    private globalHelper: GlobalHelper,
+    private readonly facultyRepository: FacultyRepository,
+    private readonly globalHelper: GlobalHelper,
   ) {}
 
   async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {

@@ -7,7 +7,7 @@ import { UserModule } from '../user/user.module';
 import { UserService } from '../user/user.service';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from './guard/jwt-auth.guard';
 import { JwtStrategy } from './jwt.strategy';
 
 describe('AuthService', () => {

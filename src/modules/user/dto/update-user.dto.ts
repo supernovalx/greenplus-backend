@@ -19,6 +19,11 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsNotEmpty()
+  @IsString()
+  password?: string;
+
+  @IsOptional()
+  @IsNotEmpty()
   @IsNumberString()
-  facultyId: number;
+  facultyId?: number;
 }

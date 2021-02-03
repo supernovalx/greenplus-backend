@@ -1,4 +1,5 @@
 import { Role } from 'src/enums/roles';
+import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
 import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
 import {
   Column,
@@ -40,4 +41,7 @@ export class User {
 
   @ManyToOne(() => Faculty, (faculty) => faculty.users)
   faculty: Faculty;
+
+  @ManyToOne(() => Contribution, (contribution) => contribution.user)
+  contributions: Contribution;
 }

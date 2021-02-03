@@ -6,6 +6,7 @@ import { GlobalHelper } from './modules/helper/global.helper';
 import { HelperModule } from './modules/helper/helper.module';
 import { ConfigModule } from '@nestjs/config';
 import { FacultyModule } from './modules/faculty/faculty.module';
+import { ContributionModule } from './modules/contribution/contribution.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FacultyModule } from './modules/faculty/faculty.module';
       isGlobal: true,
     }),
     FacultyModule,
+    ContributionModule,
   ],
   controllers: [],
   providers: [],

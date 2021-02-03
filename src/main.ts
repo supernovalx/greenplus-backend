@@ -13,7 +13,7 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Lalarasa API Documentation')
+    .setTitle('Greenplus API Documentation')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

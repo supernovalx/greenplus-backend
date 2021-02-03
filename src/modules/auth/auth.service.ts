@@ -11,9 +11,9 @@ import { TokenPayloadDto } from './dto/token-payload.dto';
 @Injectable()
 export class AuthService {
   constructor(
-    private userService: UserService,
-    private jwtService: JwtService,
-    private globalHelper: GlobalHelper,
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService,
+    private readonly globalHelper: GlobalHelper,
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginPayloadDto | null> {
