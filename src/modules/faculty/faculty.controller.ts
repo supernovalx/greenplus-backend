@@ -24,7 +24,7 @@ import { Faculty } from './entities/faculty.entity';
 @ApiTags('Faculty')
 export class FacultyController {
   constructor(
-    private readonly facultyService: FacultyService,
+    private facultyService: FacultyService,
     private globalHelper: GlobalHelper,
   ) {}
 
@@ -34,6 +34,7 @@ export class FacultyController {
     @Body() createFacultyDto: CreateFacultyDto,
   ): Promise<FacultyDto> {
     const faculty = await this.facultyService.create(createFacultyDto);
+
     return new FacultyDto(faculty);
   }
 
@@ -42,6 +43,7 @@ export class FacultyController {
   @Auth(Role.ADMIN)
   async findAll(): Promise<FacultyDto[]> {
     const faculties = await this.facultyService.findAll();
+
     return faculties.map((faculty) => new FacultyDto(faculty));
   }
 
@@ -69,7 +71,7 @@ export class FacultyController {
     }
 
     const updatedFaculty = await this.facultyService.update(
-      +id,
+      id,
       updateFacultyDto,
     );
     if (updatedFaculty === null) {
@@ -78,6 +80,7 @@ export class FacultyController {
 
     return new FacultyDto(updatedFaculty);
   }
+
   @Delete(':id')
   @ApiOperation({ summary: 'Delete faculty' })
   @Auth(Role.ADMIN)
@@ -86,7 +89,5 @@ export class FacultyController {
     if (deletedFaculty === null) {
       throw new BadRequestException();
     }
-
-    return 'this remove a faculty';
   }
 }

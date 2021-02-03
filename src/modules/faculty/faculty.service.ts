@@ -14,16 +14,14 @@ export class FacultyService {
 
   async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
     const facultyCreate = await this.facultyRepository.create(createFacultyDto);
-    facultyCreate.createAt = new Date();
+
     return await this.facultyRepository.save(facultyCreate);
   }
 
-  // This action returns all faculty
   async findAll(): Promise<Faculty[]> {
     return await this.facultyRepository.find();
   }
 
-  // This action returns a #${id} faculty
   async findOne(id: number): Promise<Faculty | null> {
     let rs: Faculty | null = null;
 
@@ -35,7 +33,6 @@ export class FacultyService {
     return facultyFind;
   }
 
-  // This action updates a #${id} faculty
   async update(
     id: number,
     updateFacultyDto: UpdateFacultyDto,
@@ -63,10 +60,10 @@ export class FacultyService {
       return rs;
     }
     rs = updatedFaculty;
+
     return rs;
   }
 
-  // This action removes a #${id} faculty
   async delete(id: number): Promise<Boolean> {
     let rs = false;
     // Check w/e faculty exist
@@ -77,9 +74,10 @@ export class FacultyService {
     // Delete
     const deletedResult = await this.facultyRepository.delete(facultyFind);
     if (deletedResult.affected != 1) {
-      rs = true;
       return rs;
     }
+    rs = true;
+
     return rs;
   }
 }
