@@ -39,7 +39,7 @@ export class UserController {
   ) {}
 
   @Post()
-  // @Auth(Role.ADMIN)
+  @Auth(Role.ADMIN)
   @ApiOperation({ summary: '*WIP* Create new user' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
