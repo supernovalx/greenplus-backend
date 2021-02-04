@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { User } from '../user/entities/user.entity';
 import { IMailService } from './imail.service';
 
 @Injectable()
@@ -48,8 +49,21 @@ export class MailService implements IMailService {
   }
 
   async sendResetPasswordMail(email: string, token: string): Promise<boolean> {
-    const content = `Reset token: <b>${token}</b>`;
+    const content = `Reset token: <br><b>${token}</b>`;
 
     return await this.sendMail(email, 'Reset password', content);
+  }
+
+  async sendAccountInfoMail(
+    user: User,
+    plainPassword: string,
+  ): Promise<boolean> {
+    const content = `A Greenplus account has been created for you!<b>Here is your log in information:<br>Email: ${user.email}<br>Password: ${plainPassword}<br>`;
+
+    return await this.sendMail(
+      user.email,
+      'Greenplus account information',
+      content,
+    );
   }
 }

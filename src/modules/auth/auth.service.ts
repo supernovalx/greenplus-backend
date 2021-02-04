@@ -117,18 +117,12 @@ export class AuthService {
     if (verifiedUser === null) {
       return rs;
     }
-    // Hash new password
-    const hashedPassword = await this.globalHelper.hashPassword(
+    // Change password
+    const updatePasswordResult = await this.userService.changePassword(
+      verifiedUser.id,
       resetPasswordDto.newPassword,
     );
-    if (!hashedPassword) {
-      return rs;
-    }
-    // Set new password
-    const setResult = await this.userService.update(verifiedUser.id, {
-      password: hashedPassword,
-    });
-    if (setResult === null) {
+    if (!updatePasswordResult) {
       return rs;
     }
     rs = true;
@@ -153,18 +147,12 @@ export class AuthService {
     if (!matchResult) {
       return rs;
     }
-    // Hash new password
-    const hashedPassword = await this.globalHelper.hashPassword(
+    // Change password
+    const updatePasswordResult = await this.userService.changePassword(
+      user.id,
       changePasswordDto.newPassword,
     );
-    if (!hashedPassword) {
-      return rs;
-    }
-    // Set new password
-    const setResult = await this.userService.update(user.id, {
-      password: hashedPassword,
-    });
-    if (setResult === null) {
+    if (!updatePasswordResult) {
       return rs;
     }
     rs = true;

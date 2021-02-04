@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GlobalHelper } from 'src/modules/helper/global.helper';
+import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -10,18 +11,33 @@ export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly globalHelper: GlobalHelper,
+    private readonly mailService: MailService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
+  async create(createUserDto: CreateUserDto): Promise<User | null> {
+    let rs = null;
+    // Generate user entity from dto
     const userCreate = await this.userRepository.create(createUserDto);
-
     // Generate random password
     const password = this.globalHelper.generateRandomPassword();
-    console.log('Password: ', password);
     const hashedPassword = await this.globalHelper.hashPassword(password);
     userCreate.password = hashedPassword;
+    // Create new user
+    const createResult = await this.userRepository.save(userCreate);
+    // Send account information mail
+    const sendMailResult = await this.mailService.sendAccountInfoMail(
+      userCreate,
+      password,
+    );
+    if (!sendMailResult) {
+      // Delete user
+      await this.userRepository.delete(createResult.id);
 
-    return await this.userRepository.save(userCreate);
+      return rs;
+    }
+    rs = createResult;
+
+    return rs;
   }
 
   async findAll(): Promise<User[]> {
@@ -76,6 +92,26 @@ export class UserService {
       return rs;
     }
     rs = updatedUser;
+
+    return rs;
+  }
+
+  async changePassword(id: number, newPassword: string): Promise<boolean> {
+    let rs = false;
+    // Hash new password
+    const hashedPassword = await this.globalHelper.hashPassword(newPassword);
+    if (!hashedPassword) {
+      return rs;
+    }
+    // Set new password
+    const updateResult = await this.userRepository.update(id, {
+      password: hashedPassword,
+      forceChangePassword: false,
+    });
+    if (updateResult.affected != 1) {
+      return rs;
+    }
+    rs = true;
 
     return rs;
   }
