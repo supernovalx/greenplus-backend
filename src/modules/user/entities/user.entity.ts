@@ -33,7 +33,7 @@ export class User {
   createAt: Date;
 
   @Column({
-    default: false,
+    default: true,
   })
   forceChangePassword: boolean;
 

@@ -20,6 +20,6 @@ export class UserDto {
     this.email = user.email;
     this.role = user.role;
     this.forceChangePassword = user.forceChangePassword;
-    // this.facultyName = user.faculty.name;
+    this.facultyName = ''; // user.faculty.name;
   }
 }

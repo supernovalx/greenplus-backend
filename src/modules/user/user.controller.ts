@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   ParseIntPipe,
@@ -44,6 +45,9 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'Invalid data' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
     const user = await this.userService.create(createUserDto);
+    if (user === null) {
+      throw new InternalServerErrorException();
+    }
 
     return new UserDto(user);
   }
