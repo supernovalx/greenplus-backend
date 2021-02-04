@@ -1,35 +1,34 @@
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Put,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
   Param,
   ParseIntPipe,
-  NotFoundException,
-  BadRequestException,
-  Delete,
+  Post,
+  Put,
   Query,
 } from '@nestjs/common';
-import { FacultyService } from './faculty.service';
-import { CreateFacultyDto } from './dto/create-faculty.dto';
-import { UpdateFacultyDto } from './dto/update-faculty.dto';
 import {
   ApiBadRequestResponse,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
+import { ApiPaginatedResponse } from 'src/common/decorator/paginated.decorator';
+import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { Role } from 'src/common/enums/roles';
+import { Auth } from '../auth/decorator/auth.decorator';
+import { GlobalHelper } from '../helper/global.helper';
+import { ClosureDatesDto } from './dto/closure-dates.dto';
+import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { FacultyDto } from './dto/faculty.dto';
 import { UpdateClosureDatesDto } from './dto/update-closure-dates.dto';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { ApiPaginatedResponse } from 'src/common/decorator/paginated.decorator';
-import { ClosureDatesDto } from './dto/closure-dates.dto';
-import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
-import { Auth } from '../auth/decorator/auth.decorator';
-import { Role } from 'src/enums/roles';
-import { GlobalHelper } from '../helper/global.helper';
-import { Faculty } from './entities/faculty.entity';
+import { UpdateFacultyDto } from './dto/update-faculty.dto';
+import { FacultyService } from './faculty.service';
 
 @Controller('faculty')
 @ApiTags('Faculty')

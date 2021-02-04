@@ -1,4 +1,3 @@
-import { Role } from 'src/enums/roles';
 import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 import {

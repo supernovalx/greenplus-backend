@@ -7,6 +7,7 @@ import { HelperModule } from './modules/helper/helper.module';
 import { ConfigModule } from '@nestjs/config';
 import { FacultyModule } from './modules/faculty/faculty.module';
 import { ContributionModule } from './modules/contribution/contribution.module';
+import { MailModule } from './modules/mail/mail.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { ContributionModule } from './modules/contribution/contribution.module';
     }),
     FacultyModule,
     ContributionModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],

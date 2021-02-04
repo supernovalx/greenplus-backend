@@ -1,12 +1,10 @@
-import { Role } from 'src/enums/roles';
+import { Role } from 'src/common/enums/roles';
 import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
 import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';

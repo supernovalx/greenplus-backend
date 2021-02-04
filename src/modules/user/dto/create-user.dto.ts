@@ -1,13 +1,11 @@
 import {
-  IsDateString,
   IsEmail,
   IsEnum,
   IsNumberString,
   IsOptional,
-  IsPhoneNumber,
   IsString,
 } from 'class-validator';
-import { Role } from 'src/enums/roles';
+import { Role } from 'src/common/enums/roles';
 
 export class CreateUserDto {
   @IsString()
@@ -19,6 +17,7 @@ export class CreateUserDto {
   @IsEnum(Role)
   role: Role;
 
+  @IsOptional()
   @IsNumberString()
-  facultyId: string;
+  facultyId?: string;
 }

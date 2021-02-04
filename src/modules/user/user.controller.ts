@@ -1,34 +1,33 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  ParseIntPipe,
-  NotFoundException,
   BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  ParseIntPipe,
+  Post,
+  Put,
   Query,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import {
   ApiBadRequestResponse,
-  ApiBearerAuth,
   ApiExtraModels,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserDto } from './dto/user.dto';
-import { GlobalHelper } from '../helper/global.helper';
-import { Auth } from '../auth/decorator/auth.decorator';
-import { Role } from 'src/enums/roles';
 import { ApiPaginatedResponse } from 'src/common/decorator/paginated.decorator';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { Role } from 'src/common/enums/roles';
+import { Auth } from '../auth/decorator/auth.decorator';
+import { GlobalHelper } from '../helper/global.helper';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UserDto } from './dto/user.dto';
+import { UserService } from './user.service';
 
 @Controller('users')
 @ApiTags('User')
