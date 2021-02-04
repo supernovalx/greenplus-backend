@@ -1,5 +1,4 @@
-import { Role } from 'src/enums/roles';
-import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
+import { Role } from 'src/common/enums/roles';
 import { User } from '../entities/user.entity';
 
 export class UserDto {
@@ -12,6 +11,7 @@ export class UserDto {
   role: Role;
 
   forceChangePassword: boolean;
+
   facultyName: string;
 
   constructor(user: User) {
@@ -20,6 +20,6 @@ export class UserDto {
     this.email = user.email;
     this.role = user.role;
     this.forceChangePassword = user.forceChangePassword;
-    this.facultyName = user.faculty.name;
+    // this.facultyName = user.faculty.name;
   }
 }

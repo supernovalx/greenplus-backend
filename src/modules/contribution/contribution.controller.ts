@@ -1,13 +1,13 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Put,
-  Param,
+  Controller,
   Delete,
-  Query,
+  Get,
+  Param,
   ParseIntPipe,
+  Post,
+  Put,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -18,7 +18,7 @@ import {
 import { ApiPaginatedResponse } from 'src/common/decorator/paginated.decorator';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { Role } from 'src/enums/roles';
+import { Role } from 'src/common/enums/roles';
 import { Auth } from '../auth/decorator/auth.decorator';
 import { ContributionService } from './contribution.service';
 import { CommentDto } from './dto/comment.dto';
