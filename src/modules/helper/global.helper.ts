@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { isArray, isEmpty, isObject } from 'lodash';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
+import { ExceptionMessage } from 'src/common/const/exception-message';
 
 @Injectable()
 export class GlobalHelper {
@@ -12,14 +13,26 @@ export class GlobalHelper {
   }
 
   async hashPassword(password: string): Promise<string> {
-    return bcrypt.hash(password, this.bcryptRounds);
+    try {
+      return await bcrypt.hash(password, this.bcryptRounds);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        ExceptionMessage.FAILED.HASH_PASSWORD,
+      );
+    }
   }
 
   async comparePassword(
     password: string,
     hashedPassword: string,
   ): Promise<boolean> {
-    return bcrypt.compare(password, hashedPassword);
+    try {
+      return await bcrypt.compare(password, hashedPassword);
+    } catch (error) {
+      throw new InternalServerErrorException(
+        ExceptionMessage.FAILED.HASH_PASSWORD,
+      );
+    }
   }
 
   checkObjectIsEmpty(object: any): boolean {
@@ -45,7 +58,7 @@ export class GlobalHelper {
     charSet: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
     let result = '';
-    for (var i = 0; i < len; i++) {
+    for (let i = 0; i < len; i++) {
       result += charSet.charAt(Math.floor(Math.random() * charSet.length));
     }
 
@@ -57,17 +70,16 @@ export class GlobalHelper {
   }
 
   shuffle(s: string): string {
-    var arr = s.split('');
-    var n = arr.length;
+    let arr = s.split('');
+    let n = arr.length;
 
-    for (var i = 0; i < n - 1; ++i) {
-      var j = this.getRandomInt(n);
+    for (let i = 0; i < n - 1; ++i) {
+      let j = this.getRandomInt(n);
 
-      var temp = arr[i];
+      let temp = arr[i];
       arr[i] = arr[j];
       arr[j] = temp;
     }
-
     s = arr.join('');
 
     return s;
@@ -87,5 +99,11 @@ export class GlobalHelper {
     )}`;
 
     return this.shuffle(password);
+  }
+
+  truthyOrFail(condition: boolean): void {
+    if (!condition) {
+      throw new Error();
+    }
   }
 }

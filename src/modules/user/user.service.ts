@@ -1,5 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { ExceptionMessage } from 'src/common/const/exception-message';
+import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
+import { Role } from 'src/common/enums/roles';
 import { GlobalHelper } from 'src/modules/helper/global.helper';
+import { FacultyRepository } from '../faculty/faculty.repository';
 import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -10,109 +14,97 @@ import { UserRepository } from './user.repository';
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly facultyRepository: FacultyRepository,
     private readonly globalHelper: GlobalHelper,
     private readonly mailService: MailService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User | null> {
-    let rs = null;
-    // Generate user entity from dto
-    const userCreate = await this.userRepository.create(createUserDto);
-    // Generate random password
-    const password = this.globalHelper.generateRandomPassword();
-    const hashedPassword = await this.globalHelper.hashPassword(password);
-    userCreate.password = hashedPassword;
-    // Create new user
-    const createResult = await this.userRepository.save(userCreate);
-    // Send account information mail
-    const sendMailResult = await this.mailService.sendAccountInfoMail(
-      userCreate,
-      password,
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const user = this.userRepository.fromDto(createUserDto);
+    // Check email existed
+    const emailExisted = await this.userRepository.checkEmailExisted(
+      user.email,
     );
-    if (!sendMailResult) {
+    if (emailExisted) {
+      throw new BadRequestException(ExceptionMessage.INVALID.EMAIL_EXISTED);
+    }
+    // Check faculty exists
+    if (user.role === Role.STUDENT || user.role === Role.MARKETING_CORDINATOR) {
+      if (user.facultyId === undefined) {
+        throw new BadRequestException(
+          ExceptionMessage.INVALID.MISSING_FACULTY_ID,
+        );
+      }
+      const facultyFind = await this.facultyRepository.findOneById(
+        user.facultyId,
+      );
+      user.facultyId = facultyFind.id;
+    } else {
+      user.facultyId = undefined;
+    }
+    // Generate random password
+    const randomPassword = this.globalHelper.generateRandomPassword();
+    const hashedPassword = await this.globalHelper.hashPassword(randomPassword);
+    user.password = hashedPassword;
+    // Create new user
+    const newUser = await this.userRepository.create(user);
+    try {
+      // Send account information mail
+      await this.mailService.sendAccountInfoMail(newUser, randomPassword);
+
+      return await this.userRepository.findOneByIdWithRelations(newUser.id);
+    } catch (err) {
       // Delete user
-      await this.userRepository.delete(createResult.id);
+      await this.userRepository.deleteOne(newUser.id);
 
-      return rs;
+      throw err;
     }
-    rs = createResult;
-
-    return rs;
   }
 
-  async findAll(): Promise<User[]> {
-    return await this.userRepository.find();
+  async findOne(id: number): Promise<User> {
+    const user: User = await this.userRepository.findOneById(id);
+
+    return user;
   }
 
-  async findOne(id: number): Promise<User | null> {
-    let rs: User | null = null;
+  async findAll(
+    paginatedQueryDto: PaginatedQueryDto,
+    query?: string,
+    facultyId?: number,
+  ): Promise<[User[], number]> {
+    // TODO: Cordinator can only view their faculty's students
 
-    const userFind = await this.userRepository.findOne(id);
-    if (!userFind) {
-      return rs;
-    }
-
-    return userFind;
+    return await this.userRepository.findAll(
+      paginatedQueryDto,
+      query,
+      facultyId,
+    );
   }
 
-  async findOneByEmail(email: string): Promise<User | null> {
-    let rs: User | null = null;
-    if (!email) {
-      return rs;
-    }
-
-    const userFind = await this.userRepository.find({ email: email });
-    if (!userFind) {
-      return rs;
-    }
-
-    return userFind[0];
-  }
-
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User | null> {
-    let rs: User | null = null;
-    if (this.globalHelper.checkObjectIsEmpty(updateUserDto)) {
-      return rs;
-    }
-    // Check user exists
-    const userFind = await this.findOne(id);
-    if (!userFind) {
-      return rs;
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    // Hash password
+    if (updateUserDto.password !== undefined) {
+      updateUserDto.password = await this.globalHelper.hashPassword(
+        updateUserDto.password,
+      );
     }
     // Update user
-    const updateResult = await this.userRepository.update(id, updateUserDto);
-    if (updateResult.affected != 1) {
-      return rs;
-    }
+    await this.userRepository.updateOne(id, updateUserDto);
     // Get user
-    const updatedUser = await this.userRepository.findOne(id, {
-      relations: ['faculty'],
-    });
-    if (!updatedUser) {
-      return rs;
-    }
-    rs = updatedUser;
-
-    return rs;
+    return await this.userRepository.findOneById(id);
   }
 
-  async changePassword(id: number, newPassword: string): Promise<boolean> {
-    let rs = false;
+  async changePassword(id: number, newPassword: string): Promise<void> {
     // Hash new password
     const hashedPassword = await this.globalHelper.hashPassword(newPassword);
-    if (!hashedPassword) {
-      return rs;
-    }
     // Set new password
-    const updateResult = await this.userRepository.update(id, {
+    await this.userRepository.updateOne(id, {
       password: hashedPassword,
       forceChangePassword: false,
     });
-    if (updateResult.affected != 1) {
-      return rs;
-    }
-    rs = true;
+  }
 
-    return rs;
+  async delete(id: number): Promise<void> {
+    await this.userRepository.deleteOne(id);
   }
 }

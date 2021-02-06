@@ -2,8 +2,8 @@ import { IsNumberString } from 'class-validator';
 
 export class PaginatedQueryDto {
   @IsNumberString()
-  offset: number;
+  offset: number = 0;
 
   @IsNumberString()
-  limit: number;
+  limit: number = 10;
 }

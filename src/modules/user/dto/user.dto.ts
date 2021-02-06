@@ -12,7 +12,11 @@ export class UserDto {
 
   forceChangePassword: boolean;
 
-  facultyName: string;
+  isBlocked: boolean;
+
+  facultyName: string = '';
+
+  facultyId: number = 0;
 
   constructor(user: User) {
     this.id = user.id;
@@ -20,6 +24,10 @@ export class UserDto {
     this.email = user.email;
     this.role = user.role;
     this.forceChangePassword = user.forceChangePassword;
-    this.facultyName = ''; // user.faculty.name;
+    this.isBlocked = user.isBlocked;
+    if (this.role === Role.STUDENT || this.role === Role.MARKETING_CORDINATOR) {
+      this.facultyName = user.faculty.name;
+      this.facultyId = user.faculty.id;
+    }
   }
 }

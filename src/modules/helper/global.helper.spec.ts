@@ -80,4 +80,28 @@ describe('GlobalHelper', () => {
       expect(matchesResult).toBe(true);
     });
   });
+
+  describe('truthyOrFail', () => {
+    it('should not fail', async () => {
+      expect(() => globalHelper.truthyOrFail(true)).not.toThrow();
+      expect(() => globalHelper.truthyOrFail(1 + 1 === 2)).not.toThrow();
+    });
+
+    it('should fail', async () => {
+      expect(() => globalHelper.truthyOrFail(false)).toThrow();
+      expect(() => globalHelper.truthyOrFail(1 + 1 === 3)).toThrow();
+    });
+  });
+
+  describe('generateRandomString', () => {
+    it('should returns string with provided length', async () => {
+      expect(globalHelper.generateRandomString(1)).toHaveLength(1);
+      expect(globalHelper.generateRandomString(100)).toHaveLength(100);
+    });
+
+    it('should fail', async () => {
+      expect(() => globalHelper.truthyOrFail(false)).toThrow();
+      expect(() => globalHelper.truthyOrFail(1 + 1 === 3)).toThrow();
+    });
+  });
 });

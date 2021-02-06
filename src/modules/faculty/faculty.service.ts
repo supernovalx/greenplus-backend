@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 import { GlobalHelper } from '../helper/global.helper';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
@@ -13,22 +13,17 @@ export class FacultyService {
   ) {}
 
   async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
-    const facultyCreate = await this.facultyRepository.create(createFacultyDto);
+    const newFaculty = await this.facultyRepository.create(createFacultyDto);
 
-    return await this.facultyRepository.save(facultyCreate);
+    return newFaculty;
   }
 
   async findAll(): Promise<Faculty[]> {
-    return await this.facultyRepository.find();
+    throw new NotImplementedException();
   }
 
-  async findOne(id: number): Promise<Faculty | null> {
-    let rs: Faculty | null = null;
-
-    const facultyFind = await this.facultyRepository.findOne(id);
-    if (!facultyFind) {
-      return rs;
-    }
+  async findOne(id: number): Promise<Faculty> {
+    const facultyFind = await this.facultyRepository.findOneById(id);
 
     return facultyFind;
   }
@@ -36,48 +31,17 @@ export class FacultyService {
   async update(
     id: number,
     updateFacultyDto: UpdateFacultyDto,
-  ): Promise<Faculty | null> {
-    let rs: Faculty | null = null;
-    if (this.globalHelper.checkObjectIsEmpty(updateFacultyDto)) {
-      return rs;
-    }
-    // Check w/e faculty exist
-    const facultyFind = await this.findOne(id);
-    if (!facultyFind) {
-      return rs;
-    }
-    // Update
-    const updateResult = await this.facultyRepository.update(
-      id,
-      updateFacultyDto,
-    );
-    if (updateResult.affected != 1) {
-      return rs;
-    }
+  ): Promise<Faculty> {
+    // Update faculty
+    await this.facultyRepository.updateOne(id, updateFacultyDto);
+    // Get updated faculty
+    const updatedFaculty = await this.facultyRepository.findOneById(id);
 
-    const updatedFaculty = await this.facultyRepository.findOne(id);
-    if (!updatedFaculty) {
-      return rs;
-    }
-    rs = updatedFaculty;
-
-    return rs;
+    return updatedFaculty;
   }
 
-  async delete(id: number): Promise<Boolean> {
-    let rs = false;
-    // Check w/e faculty exist
-    const facultyFind = await this.facultyRepository.findOne(id);
-    if (!facultyFind) {
-      return rs;
-    }
+  async delete(id: number): Promise<void> {
     // Delete
-    const deletedResult = await this.facultyRepository.delete(facultyFind);
-    if (deletedResult.affected != 1) {
-      return rs;
-    }
-    rs = true;
-
-    return rs;
+    await this.facultyRepository.deleteOne(id);
   }
 }

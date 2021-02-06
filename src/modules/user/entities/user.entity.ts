@@ -29,6 +29,9 @@ export class User {
   })
   role: Role;
 
+  @Column({ default: false })
+  isBlocked: boolean;
+
   @CreateDateColumn()
   createAt: Date;
 
@@ -36,6 +39,9 @@ export class User {
     default: true,
   })
   forceChangePassword: boolean;
+
+  @Column({ nullable: true })
+  facultyId?: number;
 
   @ManyToOne(() => Faculty, (faculty) => faculty.users)
   faculty: Faculty;
