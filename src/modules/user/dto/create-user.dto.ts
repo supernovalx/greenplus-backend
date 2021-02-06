@@ -1,10 +1,5 @@
-import {
-  IsEmail,
-  IsEnum,
-  IsNumberString,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { ApiHideProperty } from '@nestjs/swagger';
+import { IsEmail, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
 import { Role } from 'src/common/enums/roles';
 
 export class CreateUserDto {
@@ -18,6 +13,9 @@ export class CreateUserDto {
   role: Role;
 
   @IsOptional()
-  @IsNumberString()
-  facultyId?: string;
+  @IsInt()
+  facultyId?: number;
+
+  @ApiHideProperty()
+  password: string;
 }

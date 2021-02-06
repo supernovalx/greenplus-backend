@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
+import { ExceptionMessage } from 'src/common/const/exception-message';
 import { User } from '../user/entities/user.entity';
-import { IMailService } from './imail.service';
 
 @Injectable()
-export class MailService implements IMailService {
+export class MailService {
   private transporter: Transporter;
   private from: string;
   constructor(private readonly configService: ConfigService) {
@@ -27,9 +27,7 @@ export class MailService implements IMailService {
     email: string,
     subject: string,
     content: string,
-  ): Promise<boolean> {
-    let rs = false;
-
+  ): Promise<void> {
     try {
       console.log(
         await this.transporter.sendMail({
@@ -41,29 +39,19 @@ export class MailService implements IMailService {
       );
     } catch (e) {
       console.log(e);
-      return rs;
+      throw new InternalServerErrorException(ExceptionMessage.FAILED.SEND_MAIL);
     }
-    rs = true;
-
-    return rs;
   }
 
-  async sendResetPasswordMail(email: string, token: string): Promise<boolean> {
+  async sendResetPasswordMail(email: string, token: string): Promise<void> {
     const content = `Reset token: <br><b>${token}</b>`;
 
-    return await this.sendMail(email, 'Reset password', content);
+    await this.sendMail(email, 'Reset password', content);
   }
 
-  async sendAccountInfoMail(
-    user: User,
-    plainPassword: string,
-  ): Promise<boolean> {
-    const content = `A Greenplus account has been created for you!<b>Here is your log in information:<br>Email: ${user.email}<br>Password: ${plainPassword}<br>`;
+  async sendAccountInfoMail(user: User, plainPassword: string): Promise<void> {
+    const content = `A Greenplus account has been created for you!<br>Here is your log in information:<br>Email: ${user.email}<br>Password: ${plainPassword}<br>`;
 
-    return await this.sendMail(
-      user.email,
-      'Greenplus account information',
-      content,
-    );
+    await this.sendMail(user.email, 'Greenplus account information', content);
   }
 }

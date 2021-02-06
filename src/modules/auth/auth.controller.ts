@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Body,
-  Controller,
-  InternalServerErrorException,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
@@ -30,33 +24,19 @@ export class AuthController {
   @ApiBadRequestResponse({ description: 'Wrong email or password' })
   async login(@Body() loginDto: LoginDto): Promise<LoginPayloadDto> {
     let rs = await this.authService.login(loginDto);
-    if (rs === null) {
-      throw new BadRequestException('Wrong email or password!');
-    }
 
     return rs;
   }
 
-  @Post('/forget-password')
+  @Post('/send-reset-password-mail')
   @ApiOperation({
     summary: 'Send an email contains reset password link to user',
   })
   @ApiBadRequestResponse({ description: 'Wrong email' })
-  async forgetPassword(
+  async sendResetPasswordMail(
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<void> {
-    // Check user exists
-    const userFind = await this.userService.findOneByEmail(
-      forgetPasswordDto.email,
-    );
-    if (userFind === null) {
-      throw new BadRequestException('Wrong email');
-    }
-    // Send mail
-    let sendMailResult = await this.authService.forgetPassword(userFind);
-    if (!sendMailResult) {
-      throw new InternalServerErrorException();
-    }
+    await this.authService.sendResetPasswordMail(forgetPasswordDto.email);
   }
 
   @Post('/reset-password')
@@ -69,10 +49,15 @@ export class AuthController {
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<void> {
-    const resetResult = await this.authService.resetPassword(resetPasswordDto);
-    if (!resetResult) {
-      throw new BadRequestException('Reset token invalid, password invalid');
-    }
+    // Parse reset password token
+    const user = await this.authService.parseResetPasswordToken(
+      resetPasswordDto.resetToken,
+    );
+    // Change password
+    await this.userService.changePassword(
+      user.id,
+      resetPasswordDto.newPassword,
+    );
   }
 
   @Post('/change-password')
@@ -85,12 +70,6 @@ export class AuthController {
     @Body() changePasswordDto: ChangePasswordDto,
     @CurrentUser() user: User,
   ): Promise<void> {
-    const changeResult = await this.authService.changePassword(
-      user,
-      changePasswordDto,
-    );
-    if (!changeResult) {
-      throw new BadRequestException('Passwords invalid');
-    }
+    await this.authService.changePassword(user, changePasswordDto);
   }
 }

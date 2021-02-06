@@ -1,16 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { assert } from 'console';
+import { ExceptionMessage } from 'src/common/const/exception-message';
 import { GlobalHelper } from '../helper/global.helper';
 import { MailService } from '../mail/mail.service';
 import { UserDto } from '../user/dto/user.dto';
 import { User } from '../user/entities/user.entity';
+import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
 import { AccessTokenPayloadDto } from './dto/access-token-payload.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { LoginPayloadDto } from './dto/login-payload.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordTokenPayloadDto } from './dto/reset-password-token-payload.dto copy';
-import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @Injectable()
 export class AuthService {
@@ -18,145 +24,125 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly globalHelper: GlobalHelper,
+    private readonly userRepository: UserRepository,
     private readonly mailService: MailService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<LoginPayloadDto | null> {
-    let rs: LoginPayloadDto | null = null;
-    // Find user
-    const user = await this.userService.findOneByEmail(loginDto.email);
-    if (!user) {
-      return rs;
-    }
-    // Check password match
-    const matchResult = await this.globalHelper.comparePassword(
-      loginDto.password,
-      user.password,
-    );
-    if (!matchResult) {
-      return rs;
+  async login(loginDto: LoginDto): Promise<LoginPayloadDto> {
+    let user: User;
+    try {
+      // Find user
+      user = await this.userRepository.findOneByEmailWithRelations(
+        loginDto.email,
+      );
+      // Check password match
+      const matchResult = await this.globalHelper.comparePassword(
+        loginDto.password,
+        user.password,
+      );
+      this.globalHelper.truthyOrFail(matchResult);
+    } catch {
+      throw new BadRequestException(ExceptionMessage.INVALID.CREDENTIALS);
     }
     // Generate token and payload
-    rs = {
-      access_token: this.generateAccessToken(user),
+    const rs = {
+      access_token: await this.generateAccessToken(user),
       user: new UserDto(user),
     };
 
     return rs;
   }
 
-  generateAccessToken(user: User): string {
-    let rs: string = '';
-    const jwtPayload: AccessTokenPayloadDto = { sub: user.id };
-    rs = this.jwtService.sign(jwtPayload);
+  async generateAccessToken(user: User): Promise<string> {
+    try {
+      const jwtPayload: AccessTokenPayloadDto = { sub: user.id };
+      const rs = await this.jwtService.signAsync(jwtPayload);
 
-    return rs;
+      return rs;
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException(ExceptionMessage.FAILED.SIGN_JWT);
+    }
   }
 
   async generateResetPasswordToken(user: User): Promise<string> {
-    let rs: string = '';
-    const jwtPayload: ResetPasswordTokenPayloadDto = {
-      sub: user.id,
-      hash: await this.globalHelper.hashPassword(user.password),
-    };
-    rs = this.jwtService.sign(jwtPayload);
+    try {
+      const jwtPayload: ResetPasswordTokenPayloadDto = {
+        sub: user.id,
+        hash: await this.globalHelper.hashPassword(user.password),
+      };
+      const rs = await this.jwtService.signAsync(jwtPayload);
 
-    return rs;
+      return rs;
+    } catch (error) {
+      console.log(error);
+
+      throw new InternalServerErrorException(ExceptionMessage.FAILED.SIGN_JWT);
+    }
   }
 
-  async checkResetPasswordTokenValid(token: string): Promise<User | null> {
-    let rs = null;
+  async parseResetPasswordToken(token: string): Promise<User> {
     // Check token valid
-    const resetPayload = await this.jwtService.verifyAsync<ResetPasswordTokenPayloadDto>(
-      token,
-    );
-    if (this.globalHelper.checkObjectIsEmpty(resetPayload)) {
-      return rs;
+    let resetPayload;
+    try {
+      resetPayload = await this.jwtService.verifyAsync<ResetPasswordTokenPayloadDto>(
+        token,
+      );
+    } catch (err) {
+      console.log(err);
+
+      throw new BadRequestException(ExceptionMessage.INVALID.TOKEN);
     }
     // Check user exists
-    const userFind = await this.userService.findOne(resetPayload.sub);
-    if (!userFind) {
-      return rs;
-    }
+    const userFind = await this.userRepository.findOneById(resetPayload.sub);
     // Check hash valid
-    const hashResult = await this.globalHelper.comparePassword(
+    const compareResult = await this.globalHelper.comparePassword(
       userFind.password,
       resetPayload.hash,
     );
-    if (!hashResult) {
-      return rs;
+    if (!compareResult) {
+      throw new BadRequestException(ExceptionMessage.INVALID.TOKEN);
     }
-    rs = userFind;
 
-    return rs;
+    return userFind;
   }
 
-  async forgetPassword(user: User): Promise<boolean> {
-    let rs = false;
+  async sendResetPasswordMail(email: string): Promise<void> {
+    // Find user
+    const userFind = await this.userRepository.findOneByEmailWithRelations(
+      email,
+    );
     // Generate reset password token
-    const resetPasswordToken = await this.generateResetPasswordToken(user);
+    const resetPasswordToken = await this.generateResetPasswordToken(userFind);
     // Send mail
-    const sendResult = await this.mailService.sendResetPasswordMail(
-      user.email,
-      resetPasswordToken,
-    );
-    if (!sendResult) {
-      return rs;
-    }
-    rs = true;
-
-    return rs;
-  }
-
-  async resetPassword(resetPasswordDto: ResetPasswordDto): Promise<boolean> {
-    let rs = false;
-    // Check reset token valid
-    const verifiedUser = await this.checkResetPasswordTokenValid(
-      resetPasswordDto.resetToken,
-    );
-    if (verifiedUser === null) {
-      return rs;
-    }
-    // Change password
-    const updatePasswordResult = await this.userService.changePassword(
-      verifiedUser.id,
-      resetPasswordDto.newPassword,
-    );
-    if (!updatePasswordResult) {
-      return rs;
-    }
-    rs = true;
-
-    return rs;
+    await this.mailService.sendResetPasswordMail(email, resetPasswordToken);
   }
 
   async changePassword(
     user: User,
     changePasswordDto: ChangePasswordDto,
-  ): Promise<boolean> {
-    let rs = false;
+  ): Promise<void> {
     // Check new and old passwords are the same
     if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
-      return rs;
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.NEW_PASSWORD_SAME_AS_OLD,
+      );
     }
     // Check current password matches
-    const matchResult = await this.globalHelper.comparePassword(
+    const compareResult = await this.globalHelper.comparePassword(
       changePasswordDto.currentPassword,
       user.password,
     );
-    if (!matchResult) {
-      return rs;
+    if (!compareResult) {
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.PASSWORD_NOT_MATCH,
+      );
     }
     // Change password
-    const updatePasswordResult = await this.userService.changePassword(
+    await this.userService.changePassword(
       user.id,
       changePasswordDto.newPassword,
     );
-    if (!updatePasswordResult) {
-      return rs;
-    }
-    rs = true;
-
-    return rs;
   }
 }

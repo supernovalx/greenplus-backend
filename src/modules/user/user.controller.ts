@@ -4,8 +4,6 @@ import {
   Controller,
   Delete,
   Get,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -26,6 +24,7 @@ import { Role } from 'src/common/enums/roles';
 import { Auth } from '../auth/decorator/auth.decorator';
 import { GlobalHelper } from '../helper/global.helper';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
 import { UserService } from './user.service';
@@ -41,58 +40,56 @@ export class UserController {
 
   @Post()
   @Auth(Role.ADMIN)
-  @ApiOperation({ summary: '*WIP* Create new user' })
+  @ApiOperation({ summary: 'Create new user' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
     const user = await this.userService.create(createUserDto);
-    if (user === null) {
-      throw new InternalServerErrorException();
-    }
 
     return new UserDto(user);
   }
 
   @Get()
   @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
-  @ApiOperation({ summary: '*WIP* Find all users' })
+  @ApiOperation({ summary: 'Find all users' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiPaginatedResponse(UserDto)
   async findAll(
     @Query() paginatedQueryDto: PaginatedQueryDto,
+    @Query() findAllQueryDto: FindAllUserQueryDto,
   ): Promise<PaginatedDto<UserDto>> {
-    const users = await this.userService.findAll();
-    // @ts-ignore
-    return users.map((user) => new UserDto(user));
+    const [users, count] = await this.userService.findAll(
+      paginatedQueryDto,
+      findAllQueryDto.query,
+      findAllQueryDto.facultyId,
+    );
+    const rs: PaginatedDto<UserDto> = {
+      total: count,
+      results: users.map((user) => new UserDto(user)),
+    };
+
+    return rs;
   }
 
   @Get(':id')
   @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
-  @ApiOperation({ summary: '*WIP* Find user by id' })
+  @ApiOperation({ summary: 'Find user by id' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'User not found' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
     const userFind = await this.userService.findOne(id);
-    if (userFind === null) {
-      throw new NotFoundException();
-    }
 
     return new UserDto(userFind);
   }
 
   @Put(':id')
   @Auth(Role.ADMIN)
-  @ApiOperation({ summary: '*WIP* Update user' })
+  @ApiOperation({ summary: 'Update user' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
-  @ApiNotFoundResponse({ description: 'User not found' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserDto> {
-    if (this.globalHelper.checkObjectIsEmpty(updateUserDto)) {
-      throw new BadRequestException();
-    }
-
-    const updatedUser = await this.userService.update(+id, updateUserDto);
+    const updatedUser = await this.userService.update(id, updateUserDto);
     if (updatedUser === null) {
       throw new BadRequestException();
     }
@@ -102,7 +99,9 @@ export class UserController {
 
   @Delete(':id')
   @Auth(Role.ADMIN)
-  @ApiOperation({ summary: '*WIP* Delete user' })
-  @ApiNotFoundResponse({ description: 'User not found' })
-  async delete(@Param('id', ParseIntPipe) id: number) {}
+  @ApiOperation({ summary: 'Delete user' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  async delete(@Param('id', ParseIntPipe) id: number) {
+    await this.userService.delete(id);
+  }
 }
