@@ -20,15 +20,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: AccessTokenPayloadDto): Promise<User | null> {
-    let rs = null;
-
-    // Check user exists
-    const userFind = this.userService.findOne(payload.sub);
-    if (!userFind) {
-      return rs;
+    try {
+      // Check user exists
+      return await this.userService.findOne(payload.sub);
+    } catch (err) {
+      return null;
     }
-    rs = userFind;
-
-    return rs;
   }
 }
