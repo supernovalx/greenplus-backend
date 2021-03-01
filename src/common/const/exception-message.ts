@@ -10,6 +10,7 @@ export const ExceptionMessage = {
     MISSING_FACULTY_ID: 'Missing faculty id',
     EMAIL_EXISTED: 'Email already exists',
     CREDENTIALS: 'Wrong credentials',
+    CANT_DELETE_ADMIN: "Can't delete admin",
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',

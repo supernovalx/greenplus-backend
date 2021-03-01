@@ -105,6 +105,12 @@ export class UserService {
   }
 
   async delete(id: number): Promise<void> {
+    // Prevent delete ADMIN
+    const userFind = await this.userRepository.findOneById(id);
+    if (userFind.role === Role.ADMIN) {
+      throw new BadRequestException(ExceptionMessage.INVALID.CANT_DELETE_ADMIN);
+    }
+
     await this.userRepository.deleteOne(id);
   }
 }
