@@ -11,6 +11,7 @@ export const ExceptionMessage = {
     EMAIL_EXISTED: 'Email already exists',
     CREDENTIALS: 'Wrong credentials',
     CANT_DELETE_ADMIN: "Can't delete admin",
+    CANT_UPDATE_OTHER_ADMIN: "Can't update other admin account",
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',
