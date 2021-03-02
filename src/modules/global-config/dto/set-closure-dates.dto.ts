@@ -1,11 +1,11 @@
 import { IsDateString, IsOptional } from 'class-validator';
 
-export class UpdateClosureDatesDto {
+export class SetGlobalClosureDatesDto {
   @IsOptional()
   @IsDateString()
-  firstClosureDate?: Date;
+  firstClosureDate?: string;
 
   @IsOptional()
   @IsDateString()
-  secondClosureDate?: Date;
+  secondClosureDate?: string;
 }

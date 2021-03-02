@@ -1,14 +1,23 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { IsNotEmpty, IsString, IsOptional } from 'class-validator';
+import {
+  IsDateString,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { CreateFacultyDto } from './create-faculty.dto';
 
 export class UpdateFacultyDto extends PartialType(CreateFacultyDto) {
+  @IsOptional()
   @IsNotEmpty()
   @IsString()
-  name: string;
+  name?: string;
 
   @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  description?: string;
+  @IsDateString()
+  firstClosureDate?: Date;
+
+  @IsOptional()
+  @IsDateString()
+  secondClosureDate?: Date;
 }

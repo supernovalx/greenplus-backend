@@ -1,10 +1,8 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
-  NotFoundException,
   Param,
   ParseIntPipe,
   Post,
@@ -23,10 +21,9 @@ import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { Role } from 'src/common/enums/roles';
 import { Auth } from '../auth/decorator/auth.decorator';
 import { GlobalHelper } from '../helper/global.helper';
-import { ClosureDatesDto } from './dto/closure-dates.dto';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { FacultyDto } from './dto/faculty.dto';
-import { UpdateClosureDatesDto } from './dto/update-closure-dates.dto';
+import { FindAllFacultyQueryDto } from './dto/find-all-faculty-query.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
 import { Faculty } from './entities/faculty.entity';
 import { FacultyService } from './faculty.service';
@@ -51,45 +48,30 @@ export class FacultyController {
     return new FacultyDto(faculty);
   }
 
-  @Post('/closure-dates')
-  @Auth(Role.ADMIN)
-  @ApiOperation({ summary: '*WIP* Change global closure dates' })
-  @ApiBadRequestResponse({ description: 'Invalid data' })
-  async changeGlobalClosureDates(
-    @Body() updateClosureDatesDto: UpdateClosureDatesDto,
-  ): Promise<ClosureDatesDto> {
-    // @ts-ignore
-    return this.facultyService.create(createFacultyDto);
-  }
-
-  @Post(':id/closure-dates')
-  @Auth(Role.ADMIN)
-  @ApiOperation({ summary: "*WIP* Change faculty's closure dates" })
-  @ApiBadRequestResponse({ description: 'Invalid data' })
-  @ApiNotFoundResponse({ description: 'Faculty not found' })
-  async changeFacultyClosureDates(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateClosureDatesDto: UpdateClosureDatesDto,
-  ): Promise<ClosureDatesDto> {
-    // @ts-ignore
-    return this.facultyService.create(createFacultyDto);
-  }
-
   @Get()
   @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
-  @ApiOperation({ summary: '*WIP* Find all faculties' })
+  @ApiOperation({ summary: 'Find all faculties' })
   @ApiPaginatedResponse(FacultyDto)
   async findAll(
     @Query() paginatedQueryDto: PaginatedQueryDto,
+    @Query() findAllQueryDto: FindAllFacultyQueryDto,
   ): Promise<PaginatedDto<FacultyDto>> {
-    const faculties = await this.facultyService.findAll();
+    // Find all faculties
+    const [faculties, count] = await this.facultyService.findAll(
+      paginatedQueryDto,
+      findAllQueryDto.query,
+      findAllQueryDto.createAtOrderType,
+    );
+    const rs: PaginatedDto<FacultyDto> = {
+      total: count,
+      results: faculties.map((faculty) => new FacultyDto(faculty)),
+    };
 
-    // @ts-ignore
-    return faculties.map((faculty) => new FacultyDto(faculty));
+    return rs;
   }
 
   @Get(':id')
-  @Auth(Role.ADMIN)
+  @Auth()
   @ApiOperation({ summary: 'Find faculty by id' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'Faculty not found' })

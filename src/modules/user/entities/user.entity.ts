@@ -43,7 +43,7 @@ export class User {
   @Column({ nullable: true })
   facultyId?: number;
 
-  @ManyToOne(() => Faculty, (faculty) => faculty.users)
+  @ManyToOne(() => Faculty, (faculty) => faculty.users, { onDelete: 'CASCADE' })
   faculty: Faculty;
 
   @ManyToOne(() => Contribution, (contribution) => contribution.user)

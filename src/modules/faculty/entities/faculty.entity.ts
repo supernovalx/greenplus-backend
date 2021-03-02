@@ -16,6 +16,12 @@ export class Faculty {
   @Column({ unique: true })
   name: string;
 
+  @Column({ nullable: true })
+  firstClosureDate: Date;
+
+  @Column({ nullable: true })
+  secondClosureDate: Date;
+
   @CreateDateColumn()
   createAt: Date;
 
