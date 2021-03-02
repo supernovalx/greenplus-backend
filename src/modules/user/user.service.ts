@@ -65,7 +65,7 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<User> {
-    const user: User = await this.userRepository.findOneById(id);
+    const user: User = await this.userRepository.findOneByIdWithRelations(id);
 
     return user;
   }
@@ -75,8 +75,6 @@ export class UserService {
     query?: string,
     facultyId?: number,
   ): Promise<[User[], number]> {
-    // TODO: Cordinator can only view their faculty's students
-
     return await this.userRepository.findAll(
       paginatedQueryDto,
       query,
@@ -84,17 +82,39 @@ export class UserService {
     );
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(
+    id: number,
+    updaterId: number,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
     // Hash password
     if (updateUserDto.password !== undefined) {
       updateUserDto.password = await this.globalHelper.hashPassword(
         updateUserDto.password,
       );
     }
+    // ADMIN and MARKETING_MANAGER can't have facultyId
+    const userFind = await this.userRepository.findOneById(id);
+    if (
+      userFind.role === Role.ADMIN ||
+      userFind.role === Role.MARKETING_MANAGER
+    ) {
+      updateUserDto.facultyId = undefined;
+    }
+    // An ADMIN can't update other ADMIN account
+    if (userFind.role === Role.ADMIN && userFind.id !== updaterId) {
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.CANT_UPDATE_OTHER_ADMIN,
+      );
+    }
+    // Check faculty exists
+    if (updateUserDto.facultyId !== undefined) {
+      await this.facultyRepository.findOneById(id);
+    }
     // Update user
     await this.userRepository.updateOne(id, updateUserDto);
     // Get user
-    return await this.userRepository.findOneById(id);
+    return await this.userRepository.findOneByIdWithRelations(id);
   }
 
   async changePassword(id: number, newPassword: string): Promise<void> {

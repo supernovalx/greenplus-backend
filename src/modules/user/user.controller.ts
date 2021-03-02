@@ -22,6 +22,7 @@ import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { Role } from 'src/common/enums/roles';
 import { Auth } from '../auth/decorator/auth.decorator';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
 import { GlobalHelper } from '../helper/global.helper';
 import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
@@ -57,7 +58,13 @@ export class UserController {
   async findAll(
     @Query() paginatedQueryDto: PaginatedQueryDto,
     @Query() findAllQueryDto: FindAllUserQueryDto,
+    @CurrentUser() user: User,
   ): Promise<PaginatedDto<UserDto>> {
+    // Cordinator can only view their faculty's students
+    if (user.role === Role.MARKETING_CORDINATOR) {
+      findAllQueryDto.facultyId = user.facultyId;
+    }
+    // Find all users
     const [users, count] = await this.userService.findAll(
       paginatedQueryDto,
       findAllQueryDto.query,
@@ -89,8 +96,13 @@ export class UserController {
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
+    @CurrentUser() user: User,
   ): Promise<UserDto> {
-    const updatedUser: User = await this.userService.update(id, updateUserDto);
+    const updatedUser: User = await this.userService.update(
+      id,
+      user.id,
+      updateUserDto,
+    );
 
     return new UserDto(updatedUser);
   }
