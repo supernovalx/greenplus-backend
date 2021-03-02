@@ -57,8 +57,8 @@ export class GlobalHelper {
     len: number,
     charSet: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
   ): string {
-    let result = '';
-    for (let i = 0; i < len; i++) {
+    let result: string = '';
+    for (let i: number = 0; i < len; i++) {
       result += charSet.charAt(Math.floor(Math.random() * charSet.length));
     }
 
@@ -70,27 +70,26 @@ export class GlobalHelper {
   }
 
   shuffle(s: string): string {
-    let arr = s.split('');
-    let n = arr.length;
+    let arr: string[] = s.split('');
+    const n = arr.length;
 
-    for (let i = 0; i < n - 1; ++i) {
-      let j = this.getRandomInt(n);
+    for (let i: number = 0; i < n - 1; i++) {
+      const j = this.getRandomInt(n);
 
-      let temp = arr[i];
+      const temp = arr[i];
       arr[i] = arr[j];
       arr[j] = temp;
     }
-    s = arr.join('');
 
-    return s;
+    return arr.join('');
   }
 
   generateRandomPassword(): string {
-    const letters = 'abcdefghijklmnopqrstuvwxyz';
-    const capLetters = letters.toUpperCase();
-    const numbers = '0123456789';
+    const letters: string = 'abcdefghijklmnopqrstuvwxyz';
+    const capLetters: string = letters.toUpperCase();
+    const numbers: string = '0123456789';
 
-    let password = `${this.generateRandomString(
+    const password: string = `${this.generateRandomString(
       5,
       letters,
     )}${this.generateRandomString(2, capLetters)}${this.generateRandomString(

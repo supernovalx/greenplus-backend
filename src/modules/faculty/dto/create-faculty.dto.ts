@@ -7,5 +7,6 @@ export class CreateFacultyDto {
 
   @IsOptional()
   @IsString()
+  @IsNotEmpty()
   description?: string;
 }

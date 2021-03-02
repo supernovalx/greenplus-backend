@@ -12,6 +12,6 @@ export class FindAllUserQueryDto {
   query?: string;
 
   @IsOptional()
-  @IsNumberString()
+  @IsNumberString({ no_symbols: true })
   facultyId?: number;
 }

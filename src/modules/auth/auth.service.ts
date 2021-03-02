@@ -4,7 +4,6 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { assert } from 'console';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { GlobalHelper } from '../helper/global.helper';
 import { MailService } from '../mail/mail.service';
@@ -12,11 +11,11 @@ import { UserDto } from '../user/dto/user.dto';
 import { User } from '../user/entities/user.entity';
 import { UserRepository } from '../user/user.repository';
 import { UserService } from '../user/user.service';
-import { AccessTokenPayloadDto } from './dto/access-token-payload.dto';
+import { AccessTokenResponseDto } from './dto/access-token-response.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
-import { LoginPayloadDto } from './dto/login-payload.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 import { LoginDto } from './dto/login.dto';
-import { ResetPasswordTokenPayloadDto } from './dto/reset-password-token-payload.dto copy';
+import { ResetPasswordTokenResponseDto } from './dto/reset-password-token-response.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,7 +27,7 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async login(loginDto: LoginDto): Promise<LoginPayloadDto> {
+  async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     let user: User;
     try {
       // Find user
@@ -45,6 +44,7 @@ export class AuthService {
       throw new BadRequestException(ExceptionMessage.INVALID.CREDENTIALS);
     }
     // Generate token and payload
+    // TODO: SRP
     const rs = {
       access_token: await this.generateAccessToken(user),
       user: new UserDto(user),
@@ -55,8 +55,8 @@ export class AuthService {
 
   async generateAccessToken(user: User): Promise<string> {
     try {
-      const jwtPayload: AccessTokenPayloadDto = { sub: user.id };
-      const rs = await this.jwtService.signAsync(jwtPayload);
+      const jwtPayload: AccessTokenResponseDto = { sub: user.id };
+      const rs: string = await this.jwtService.signAsync(jwtPayload);
 
       return rs;
     } catch (error) {
@@ -68,11 +68,12 @@ export class AuthService {
 
   async generateResetPasswordToken(user: User): Promise<string> {
     try {
-      const jwtPayload: ResetPasswordTokenPayloadDto = {
+      const jwtPayload: ResetPasswordTokenResponseDto = {
         sub: user.id,
+        // Hash the hash of user password. When user changed their password, this token will be invalid
         hash: await this.globalHelper.hashPassword(user.password),
       };
-      const rs = await this.jwtService.signAsync(jwtPayload);
+      const rs: string = await this.jwtService.signAsync(jwtPayload);
 
       return rs;
     } catch (error) {
@@ -83,38 +84,39 @@ export class AuthService {
   }
 
   async parseResetPasswordToken(token: string): Promise<User> {
-    // Check token valid
-    let resetPayload;
     try {
-      resetPayload = await this.jwtService.verifyAsync<ResetPasswordTokenPayloadDto>(
+      // Check token valid
+      const resetPayload = await this.jwtService.verifyAsync<ResetPasswordTokenResponseDto>(
         token,
       );
+      // Check user exists
+      const userFind: User = await this.userRepository.findOneById(
+        resetPayload.sub,
+      );
+      // Check hash valid
+      const compareResult: boolean = await this.globalHelper.comparePassword(
+        userFind.password,
+        resetPayload.hash,
+      );
+      this.globalHelper.truthyOrFail(compareResult);
+
+      return userFind;
     } catch (err) {
       console.log(err);
 
       throw new BadRequestException(ExceptionMessage.INVALID.TOKEN);
     }
-    // Check user exists
-    const userFind = await this.userRepository.findOneById(resetPayload.sub);
-    // Check hash valid
-    const compareResult = await this.globalHelper.comparePassword(
-      userFind.password,
-      resetPayload.hash,
-    );
-    if (!compareResult) {
-      throw new BadRequestException(ExceptionMessage.INVALID.TOKEN);
-    }
-
-    return userFind;
   }
 
   async sendResetPasswordMail(email: string): Promise<void> {
     // Find user
-    const userFind = await this.userRepository.findOneByEmailWithRelations(
+    const userFind: User = await this.userRepository.findOneByEmailWithRelations(
       email,
     );
     // Generate reset password token
-    const resetPasswordToken = await this.generateResetPasswordToken(userFind);
+    const resetPasswordToken: string = await this.generateResetPasswordToken(
+      userFind,
+    );
     // Send mail
     await this.mailService.sendResetPasswordMail(email, resetPasswordToken);
   }
@@ -123,14 +125,14 @@ export class AuthService {
     user: User,
     changePasswordDto: ChangePasswordDto,
   ): Promise<void> {
-    // Check new and old passwords are the same
+    // New password must not be the same as old password
     if (changePasswordDto.currentPassword === changePasswordDto.newPassword) {
       throw new BadRequestException(
         ExceptionMessage.INVALID.NEW_PASSWORD_SAME_AS_OLD,
       );
     }
     // Check current password matches
-    const compareResult = await this.globalHelper.comparePassword(
+    const compareResult: boolean = await this.globalHelper.comparePassword(
       changePasswordDto.currentPassword,
       user.password,
     );

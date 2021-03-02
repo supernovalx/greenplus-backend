@@ -1,5 +1,10 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiNotFoundResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { User } from '../user/entities/user.entity';
 import { UserService } from '../user/user.service';
 import { AuthService } from './auth.service';
@@ -7,7 +12,7 @@ import { Auth } from './decorator/auth.decorator';
 import { CurrentUser } from './decorator/current-user.decorator';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { ForgetPasswordDto } from './dto/forget-password.dto';
-import { LoginPayloadDto } from './dto/login-payload.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -22,8 +27,8 @@ export class AuthController {
   @Post('/login')
   @ApiOperation({ summary: 'Login' })
   @ApiBadRequestResponse({ description: 'Wrong email or password' })
-  async login(@Body() loginDto: LoginDto): Promise<LoginPayloadDto> {
-    let rs = await this.authService.login(loginDto);
+  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
+    let rs: LoginResponseDto = await this.authService.login(loginDto);
 
     return rs;
   }
@@ -33,6 +38,7 @@ export class AuthController {
     summary: 'Send an email contains reset password link to user',
   })
   @ApiBadRequestResponse({ description: 'Wrong email' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   async sendResetPasswordMail(
     @Body() forgetPasswordDto: ForgetPasswordDto,
   ): Promise<void> {
@@ -50,7 +56,7 @@ export class AuthController {
     @Body() resetPasswordDto: ResetPasswordDto,
   ): Promise<void> {
     // Parse reset password token
-    const user = await this.authService.parseResetPasswordToken(
+    const user: User = await this.authService.parseResetPasswordToken(
       resetPasswordDto.resetToken,
     );
     // Change password
