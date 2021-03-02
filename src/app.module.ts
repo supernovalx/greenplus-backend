@@ -1,13 +1,13 @@
 import { Module } from '@nestjs/common';
-import { AuthModule } from './modules/auth/auth.module';
-import { UserModule } from './modules/user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { GlobalHelper } from './modules/helper/global.helper';
-import { HelperModule } from './modules/helper/helper.module';
 import { ConfigModule } from '@nestjs/config';
-import { FacultyModule } from './modules/faculty/faculty.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './modules/auth/auth.module';
 import { ContributionModule } from './modules/contribution/contribution.module';
+import { FacultyModule } from './modules/faculty/faculty.module';
+import { GlobalConfigModule } from './modules/global-config/global-config.module';
+import { HelperModule } from './modules/helper/helper.module';
 import { MailModule } from './modules/mail/mail.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -21,6 +21,7 @@ import { MailModule } from './modules/mail/mail.module';
     FacultyModule,
     ContributionModule,
     MailModule,
+    GlobalConfigModule,
   ],
   controllers: [],
   providers: [],

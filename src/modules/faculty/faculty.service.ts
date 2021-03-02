@@ -1,4 +1,6 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
+import { OrderType } from 'src/common/enums/order-types';
 import { GlobalHelper } from '../helper/global.helper';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
@@ -13,6 +15,11 @@ export class FacultyService {
   ) {}
 
   async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
+    // Check name unique
+    await this.facultyRepository.ensureNameIsUniqueOrFail(
+      createFacultyDto.name,
+    );
+    // Create new faculty
     const newFaculty: Faculty = await this.facultyRepository.create(
       createFacultyDto,
     );
@@ -20,8 +27,16 @@ export class FacultyService {
     return newFaculty;
   }
 
-  async findAll(): Promise<Faculty[]> {
-    throw new NotImplementedException();
+  async findAll(
+    paginatedQueryDto: PaginatedQueryDto,
+    query?: string,
+    createAtOrderType?: OrderType,
+  ): Promise<[Faculty[], number]> {
+    return await this.facultyRepository.findAll(
+      paginatedQueryDto,
+      query,
+      createAtOrderType,
+    );
   }
 
   async findOne(id: number): Promise<Faculty> {
@@ -34,6 +49,14 @@ export class FacultyService {
     id: number,
     updateFacultyDto: UpdateFacultyDto,
   ): Promise<Faculty> {
+    // Check faculty exists
+    await this.facultyRepository.findOneById(id);
+    // Check name is unique
+    if (updateFacultyDto.name) {
+      await this.facultyRepository.ensureNameIsUniqueOrFail(
+        updateFacultyDto.name,
+      );
+    }
     // Update faculty
     await this.facultyRepository.updateOne(id, updateFacultyDto);
     // Get updated faculty

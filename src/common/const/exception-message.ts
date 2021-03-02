@@ -1,6 +1,5 @@
 export const ExceptionMessage = {
   NOT_FOUND: {
-    USER: 'User not found',
     ENTITY: (entityName: string) => `${entityName} not found`,
   },
   INVALID: {
@@ -12,6 +11,7 @@ export const ExceptionMessage = {
     CREDENTIALS: 'Wrong credentials',
     CANT_DELETE_ADMIN: "Can't delete admin",
     CANT_UPDATE_OTHER_ADMIN: "Can't update other admin account",
+    MUST_BE_UNIQUE: (entityName: string) => `${entityName} must be unique`,
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',

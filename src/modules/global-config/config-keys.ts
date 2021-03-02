@@ -1,0 +1,4 @@
+export const GlobalConfigKey = {
+  FIRST_CLOSURE_DATE: 'FIRST_CLOSURE_DATE',
+  SECOND_CLOSURE_DATE: 'SECOND_CLOSURE_DATE',
+};

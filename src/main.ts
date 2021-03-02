@@ -7,6 +7,8 @@ import {
   SwaggerModule,
 } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { GlobalConfigKey } from './modules/global-config/config-keys';
+import { GlobalConfigRepository } from './modules/global-config/global-config.repository';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -30,9 +32,31 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const PORT = Number(configService.get<number>('PORT'));
 
+  // Seeding
+  const globalConfigRepository = app.get(GlobalConfigRepository);
+  await seedGlobalClosureDates(globalConfigRepository);
+
   // CORS
   app.enableCors({ origin: '*' });
 
   await app.listen(PORT || 3000);
 }
+
+async function seedGlobalClosureDates(
+  globalConfigRepository: GlobalConfigRepository,
+) {
+  try {
+    await globalConfigRepository.get(GlobalConfigKey.FIRST_CLOSURE_DATE);
+  } catch {
+    await globalConfigRepository.create({
+      key: GlobalConfigKey.FIRST_CLOSURE_DATE,
+      value: new Date(3000, 1, 1).toISOString(),
+    });
+    await globalConfigRepository.create({
+      key: GlobalConfigKey.SECOND_CLOSURE_DATE,
+      value: new Date(3000, 1, 1).toISOString(),
+    });
+  }
+}
+
 bootstrap();
