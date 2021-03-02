@@ -6,7 +6,7 @@ import {
 import { BaseRepository } from 'src/common/base.repository';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
-import { EntityRepository } from 'typeorm';
+import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @EntityRepository(User)
@@ -16,10 +16,7 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findOneByEmailWithRelations(email: string): Promise<User> {
-    if (!email) {
-      throw new BadRequestException('Email empty');
-    }
-    const rs = await this.repository.findOne(
+    const rs: User | undefined = await this.repository.findOne(
       { email: email },
       { relations: ['faculty'] },
     );
@@ -33,15 +30,16 @@ export class UserRepository extends BaseRepository<User> {
   }
 
   async findOneByIdWithRelations(id: number): Promise<User> {
-    try {
-      return await this.repository.findOneOrFail(id, {
-        relations: ['faculty'],
-      });
-    } catch (err) {
+    const rs: User | undefined = await this.repository.findOne(id, {
+      relations: ['faculty'],
+    });
+    if (rs === undefined) {
       throw new NotFoundException(
         ExceptionMessage.NOT_FOUND.ENTITY(this.entityName),
       );
     }
+
+    return rs;
   }
 
   async findAll(
@@ -49,7 +47,7 @@ export class UserRepository extends BaseRepository<User> {
     query?: string,
     facultyId?: number,
   ): Promise<[User[], number]> {
-    const qb = this.repository
+    const qb: SelectQueryBuilder<User> = this.repository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.faculty', 'faculty');
     // Filters

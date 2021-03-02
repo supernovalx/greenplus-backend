@@ -28,7 +28,7 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsNotEmpty()
-  @IsNumberString()
+  @IsNumberString({ no_symbols: true })
   facultyId?: number;
 
   @IsOptional()

@@ -13,14 +13,16 @@ export class RolesGuard implements CanActivate {
   ) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredRoles: Role[] = this.reflector.getAllAndOverride<Role[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+    // Any roles can pass if there is no specific role requirements
     if (this.globalHelper.checkArrayIsEmpty(requiredRoles)) {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
+
     return requiredRoles.includes((user as User).role);
   }
 }

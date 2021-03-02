@@ -3,6 +3,7 @@ import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { Role } from 'src/common/enums/roles';
 import { GlobalHelper } from 'src/modules/helper/global.helper';
+import { Faculty } from '../faculty/entities/faculty.entity';
 import { FacultyRepository } from '../faculty/faculty.repository';
 import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,9 +21,9 @@ export class UserService {
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const user = this.userRepository.fromDto(createUserDto);
+    const user: User = this.userRepository.fromDto(createUserDto);
     // Check email existed
-    const emailExisted = await this.userRepository.checkEmailExisted(
+    const emailExisted: boolean = await this.userRepository.checkEmailExisted(
       user.email,
     );
     if (emailExisted) {
@@ -35,7 +36,7 @@ export class UserService {
           ExceptionMessage.INVALID.MISSING_FACULTY_ID,
         );
       }
-      const facultyFind = await this.facultyRepository.findOneById(
+      const facultyFind: Faculty = await this.facultyRepository.findOneById(
         user.facultyId,
       );
       user.facultyId = facultyFind.id;
@@ -43,18 +44,20 @@ export class UserService {
       user.facultyId = undefined;
     }
     // Generate random password
-    const randomPassword = this.globalHelper.generateRandomPassword();
-    const hashedPassword = await this.globalHelper.hashPassword(randomPassword);
+    const randomPassword: string = this.globalHelper.generateRandomPassword();
+    const hashedPassword: string = await this.globalHelper.hashPassword(
+      randomPassword,
+    );
     user.password = hashedPassword;
     // Create new user
-    const newUser = await this.userRepository.create(user);
+    const newUser: User = await this.userRepository.create(user);
     try {
       // Send account information mail
       await this.mailService.sendAccountInfoMail(newUser, randomPassword);
 
       return await this.userRepository.findOneByIdWithRelations(newUser.id);
     } catch (err) {
-      // Delete user
+      // Undo operation
       await this.userRepository.deleteOne(newUser.id);
 
       throw err;
@@ -96,7 +99,9 @@ export class UserService {
 
   async changePassword(id: number, newPassword: string): Promise<void> {
     // Hash new password
-    const hashedPassword = await this.globalHelper.hashPassword(newPassword);
+    const hashedPassword: string = await this.globalHelper.hashPassword(
+      newPassword,
+    );
     // Set new password
     await this.userRepository.updateOne(id, {
       password: hashedPassword,
@@ -106,7 +111,7 @@ export class UserService {
 
   async delete(id: number): Promise<void> {
     // Prevent delete ADMIN
-    const userFind = await this.userRepository.findOneById(id);
+    const userFind: User = await this.userRepository.findOneById(id);
     if (userFind.role === Role.ADMIN) {
       throw new BadRequestException(ExceptionMessage.INVALID.CANT_DELETE_ADMIN);
     }

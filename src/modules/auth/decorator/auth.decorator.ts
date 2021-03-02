@@ -9,6 +9,7 @@ export function Auth(...roles: Role[]) {
   return applyDecorators(
     SetMetadata(ROLES_KEY, roles),
     UseGuards(JwtAuthGuard, RolesGuard),
+    // Swagger decorators
     ApiBearerAuth(),
     ApiUnauthorizedResponse({
       description: `Unauthorized. Require role(s): ${

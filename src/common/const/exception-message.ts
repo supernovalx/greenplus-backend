@@ -15,9 +15,9 @@ export const ExceptionMessage = {
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',
     SIGN_JWT: 'Failed to sign payload',
-    SEND_MAIL: 'Failed to send mail',
-    UPDATE_ENTITY: 'Failed to update entity',
-    DELETE_ENTITY: 'Failed to delete entity',
+    SEND_MAIL: 'Failed to send email',
+    UPDATE_ENTITY: (entityName: string) => `Failed to update ${entityName}`,
+    DELETE_ENTITY: (entityName: string) => `Failed to delete ${entityName}`,
     QUERY: 'Query failed',
   },
 };

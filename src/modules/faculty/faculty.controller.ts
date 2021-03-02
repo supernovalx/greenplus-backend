@@ -28,6 +28,7 @@ import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { FacultyDto } from './dto/faculty.dto';
 import { UpdateClosureDatesDto } from './dto/update-closure-dates.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
+import { Faculty } from './entities/faculty.entity';
 import { FacultyService } from './faculty.service';
 
 @Controller('faculty')
@@ -45,7 +46,7 @@ export class FacultyController {
   async create(
     @Body() createFacultyDto: CreateFacultyDto,
   ): Promise<FacultyDto> {
-    const faculty = await this.facultyService.create(createFacultyDto);
+    const faculty: Faculty = await this.facultyService.create(createFacultyDto);
 
     return new FacultyDto(faculty);
   }
@@ -93,10 +94,7 @@ export class FacultyController {
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'Faculty not found' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<FacultyDto> {
-    const facultyFind = await this.facultyService.findOne(id);
-    if (facultyFind === null) {
-      throw new NotFoundException();
-    }
+    const facultyFind: Faculty = await this.facultyService.findOne(id);
 
     return new FacultyDto(facultyFind);
   }
@@ -110,17 +108,10 @@ export class FacultyController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateFacultyDto: UpdateFacultyDto,
   ): Promise<FacultyDto> {
-    if (this.globalHelper.checkObjectIsEmpty(updateFacultyDto)) {
-      throw new BadRequestException();
-    }
-
-    const updatedFaculty = await this.facultyService.update(
+    const updatedFaculty: Faculty = await this.facultyService.update(
       id,
       updateFacultyDto,
     );
-    if (updatedFaculty === null) {
-      throw new BadRequestException();
-    }
 
     return new FacultyDto(updatedFaculty);
   }
@@ -131,9 +122,6 @@ export class FacultyController {
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'Faculty not found' })
   async delete(@Param('id', ParseIntPipe) id: number) {
-    const deletedFaculty = await this.facultyService.delete(+id);
-    if (deletedFaculty === null) {
-      throw new BadRequestException();
-    }
+    await this.facultyService.delete(id);
   }
 }

@@ -6,4 +6,9 @@ export class UpdateFacultyDto extends PartialType(CreateFacultyDto) {
   @IsNotEmpty()
   @IsString()
   name: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  description?: string;
 }

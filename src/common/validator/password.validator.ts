@@ -11,22 +11,28 @@ export class ValidPassword implements ValidatorConstraintInterface {
   }
 
   isValidPassword(password: string) {
-    let rs = false;
+    try {
+      let rs: boolean = false;
 
-    const uppercaseMatches = password.match(/[A-Z]/);
-    if (!uppercaseMatches) {
-      return rs;
-    }
-    const numberMatches = password.match(/[0-9]/);
-    if (!numberMatches) {
-      return rs;
-    }
-    rs =
-      password.length >= 8 &&
-      uppercaseMatches.length > 0 &&
-      numberMatches.length > 0;
+      const uppercaseMatches: RegExpMatchArray | null = password.match(/[A-Z]/);
+      if (uppercaseMatches === null) {
+        return rs;
+      }
+      const numberMatches: RegExpMatchArray | null = password.match(/[0-9]/);
+      if (numberMatches === null) {
+        return rs;
+      }
+      rs =
+        password.length >= 8 &&
+        uppercaseMatches.length > 0 &&
+        numberMatches.length > 0;
 
-    return rs;
+      return rs;
+    } catch (err) {
+      console.log(err);
+
+      return false;
+    }
   }
 
   defaultMessage(args: ValidationArguments) {

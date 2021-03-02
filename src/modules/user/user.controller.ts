@@ -27,6 +27,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 
 @Controller('users')
@@ -43,7 +44,7 @@ export class UserController {
   @ApiOperation({ summary: 'Create new user' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   async create(@Body() createUserDto: CreateUserDto): Promise<UserDto> {
-    const user = await this.userService.create(createUserDto);
+    const user: User = await this.userService.create(createUserDto);
 
     return new UserDto(user);
   }
@@ -76,7 +77,7 @@ export class UserController {
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'User not found' })
   async findOne(@Param('id', ParseIntPipe) id: number): Promise<UserDto> {
-    const userFind = await this.userService.findOne(id);
+    const userFind: User = await this.userService.findOne(id);
 
     return new UserDto(userFind);
   }
@@ -89,10 +90,7 @@ export class UserController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserDto> {
-    const updatedUser = await this.userService.update(id, updateUserDto);
-    if (updatedUser === null) {
-      throw new BadRequestException();
-    }
+    const updatedUser: User = await this.userService.update(id, updateUserDto);
 
     return new UserDto(updatedUser);
   }
@@ -101,7 +99,7 @@ export class UserController {
   @Auth(Role.ADMIN)
   @ApiOperation({ summary: 'Delete user' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
-  async delete(@Param('id', ParseIntPipe) id: number) {
+  async delete(@Param('id', ParseIntPipe) id: number): Promise<void> {
     await this.userService.delete(id);
   }
 }

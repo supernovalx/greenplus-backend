@@ -13,7 +13,9 @@ export class FacultyService {
   ) {}
 
   async create(createFacultyDto: CreateFacultyDto): Promise<Faculty> {
-    const newFaculty = await this.facultyRepository.create(createFacultyDto);
+    const newFaculty: Faculty = await this.facultyRepository.create(
+      createFacultyDto,
+    );
 
     return newFaculty;
   }
@@ -23,7 +25,7 @@ export class FacultyService {
   }
 
   async findOne(id: number): Promise<Faculty> {
-    const facultyFind = await this.facultyRepository.findOneById(id);
+    const facultyFind: Faculty = await this.facultyRepository.findOneById(id);
 
     return facultyFind;
   }
@@ -35,7 +37,9 @@ export class FacultyService {
     // Update faculty
     await this.facultyRepository.updateOne(id, updateFacultyDto);
     // Get updated faculty
-    const updatedFaculty = await this.facultyRepository.findOneById(id);
+    const updatedFaculty: Faculty = await this.facultyRepository.findOneById(
+      id,
+    );
 
     return updatedFaculty;
   }
