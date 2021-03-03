@@ -1,11 +1,11 @@
+import { User } from 'src/modules/user/entities/user.entity';
 import {
-  PrimaryGeneratedColumn,
-  ManyToOne,
-  OneToMany,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
   Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Contribution } from './contribution.entity';
 
@@ -14,17 +14,31 @@ export class ContributionComment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ContributionComment, (comment) => comment.childComments)
-  parentComment: ContributionComment;
+  // @ManyToOne(() => ContributionComment, (comment) => comment.childComments)
+  // parentComment: ContributionComment;
 
-  @OneToMany(() => ContributionComment, (comment) => comment.parentComment)
-  childComments: ContributionComment[];
+  // @OneToMany(() => ContributionComment, (comment) => comment.parentComment)
+  // childComments: ContributionComment[];
 
-  @ManyToOne(() => Contribution, (contribution) => contribution.comments)
+  @Column()
+  contributionId: number;
+
+  @ManyToOne(() => Contribution, (contribution) => contribution.comments, {
+    onDelete: 'CASCADE',
+  })
   contribution: Contribution;
 
   @Column()
+  userId: number;
+
+  @ManyToOne(() => User, (user) => user.comments, { onDelete: 'CASCADE' })
+  user: User;
+
+  @Column()
   comment: string;
+
+  @Column({ default: false })
+  isDeleted: boolean;
 
   @CreateDateColumn()
   createAt: Date;

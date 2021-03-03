@@ -1,6 +1,6 @@
+import { ContributionComment } from 'src/modules/contribution/entities/contribution-comment.entity';
 import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
 import { User } from 'src/modules/user/entities/user.entity';
-import { ContributionComment } from 'src/modules/contribution/entities/contribution-comment.entity';
 import {
   Column,
   CreateDateColumn,
@@ -17,8 +17,14 @@ export class Contribution {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column()
+  userId: number;
+
   @ManyToOne(() => User, (user) => user.contributions)
   user: User;
+
+  @Column()
+  facultyId: number;
 
   @ManyToOne(() => Faculty, (faculty) => faculty.contributions)
   faculty: Faculty;
@@ -26,8 +32,10 @@ export class Contribution {
   @OneToMany(() => ContributionComment, (comment) => comment.contribution)
   comments: ContributionComment[];
 
-  @OneToMany(() => ContributionFile, (file) => file.contribution)
-  files: File[];
+  @OneToMany(() => ContributionFile, (file) => file.contribution, {
+    cascade: ['insert'],
+  })
+  files: ContributionFile[];
 
   @Column()
   name: string;
@@ -35,8 +43,14 @@ export class Contribution {
   @Column({ default: '' })
   description: string;
 
+  @Column({ default: 0 })
+  views: number;
+
+  @Column()
+  thumbnail: string;
+
   @Column({ default: false })
-  selected: boolean;
+  isPublished: boolean;
 
   @CreateDateColumn()
   createAt: Date;
