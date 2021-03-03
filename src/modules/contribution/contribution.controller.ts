@@ -8,9 +8,16 @@ import {
   Post,
   Put,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
+import {
   ApiBadRequestResponse,
+  ApiConsumes,
   ApiNotFoundResponse,
   ApiOperation,
   ApiTags,
@@ -20,122 +27,260 @@ import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { Role } from 'src/common/enums/roles';
 import { Auth } from '../auth/decorator/auth.decorator';
+import { CurrentUser } from '../auth/decorator/current-user.decorator';
+import { User } from '../user/entities/user.entity';
+import { ContributionCommentService } from './contribution-comment.service';
+import { ContributionFileService } from './contribution-file.service';
 import { ContributionService } from './contribution.service';
-import { CommentDto } from './dto/comment.dto';
-import { CreateCommentDto } from './dto/comment.dto copy';
+import { ContributionCommentDto } from './dto/contribution-comment.dto';
 import { ContributionDto } from './dto/contribution.dto';
+import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateContributionDto } from './dto/create-contribution.dto';
 import { DetailedContributionDto } from './dto/detailed-contribution.dto';
+import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
+import { FindAllPublishedContributionQueryDto } from './dto/find-all-published-contribution-query.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateContributionDto } from './dto/update-contribution.dto';
+import { Contribution } from './entities/contribution.entity';
 
 @Controller('contributions')
 @ApiTags('Contribution')
 export class ContributionController {
-  constructor(private readonly contributionService: ContributionService) {}
+  constructor(
+    private readonly contributionService: ContributionService,
+    private readonly contributionFileService: ContributionFileService,
+    private readonly contributionCommentService: ContributionCommentService,
+  ) {}
 
   @Post()
   @Auth(Role.STUDENT)
-  @ApiOperation({ summary: '*WIP* Create new contribution' })
+  @ApiOperation({ summary: 'Create new contribution' })
   @ApiBadRequestResponse({ description: 'Invalid data, closure date is over' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'files', maxCount: 2 },
+      { name: 'thumbnail', maxCount: 1 },
+    ]),
+  )
   async create(
     @Body() createContributionDto: CreateContributionDto,
+    @UploadedFiles() files: any,
+    @CurrentUser() user: User,
   ): Promise<ContributionDto> {
-    // @ts-ignore
-    return this.contributionService.create(createContributionDto);
+    console.log(
+      createContributionDto,
+      '\n--------------------------------\n',
+      files,
+      '--------------------------------',
+    );
+
+    const contribution: Contribution = await this.contributionService.createNewContribution(
+      user,
+      createContributionDto,
+      files.files,
+      files.thumbnail[0],
+    );
+
+    return new ContributionDto(contribution);
   }
 
   @Get()
   @Auth()
-  @ApiOperation({ summary: '*WIP* Find all contributions' })
+  @ApiOperation({ summary: 'Find all contributions' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiPaginatedResponse(ContributionDto)
   async findAll(
     @Query() paginatedQueryDto: PaginatedQueryDto,
+    @Query() query: FindAllContributionQueryDto,
+    @CurrentUser() user: User,
   ): Promise<PaginatedDto<ContributionDto>> {
-    // @ts-ignore
-    return this.contributionService.findAll();
+    if (user) {
+      if (user.role === Role.MARKETING_MANAGER) {
+        // MARKETING_MANAGER can only view published contributions
+        query.isPublished = true;
+      }
+      if (user.role === Role.MARKETING_CORDINATOR) {
+        // MARKETING_CORDINATOR can only view contributions of their faculty
+        query.facultyId = user.faculty.id;
+      }
+      if (user.role === Role.STUDENT) {
+        // STUDENT can only view unpublished contributions of themselves
+        if (!query.isPublished) {
+          query.authorId = user.id;
+          query.facultyId = user.faculty.id;
+        } else {
+          query.isPublished = true;
+        }
+      }
+    } else {
+      // Guest
+      query.isPublished = true;
+    }
+    // Find all contributions
+    const [contributions, count] = await this.contributionService.findAll(
+      paginatedQueryDto,
+      query,
+    );
+    const rs: PaginatedDto<ContributionDto> = {
+      total: count,
+      results: contributions.map(
+        (contribution) => new ContributionDto(contribution),
+      ),
+    };
+
+    return rs;
+  }
+
+  @Get('published')
+  @ApiOperation({ summary: 'Find all published contributions' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  @ApiPaginatedResponse(ContributionDto)
+  async findAllPublished(
+    @Query() paginatedQueryDto: PaginatedQueryDto,
+    @Query() query: FindAllPublishedContributionQueryDto,
+  ): Promise<PaginatedDto<ContributionDto>> {
+    // Find all contributions
+    const [contributions, count] = await this.contributionService.findAll(
+      paginatedQueryDto,
+      {
+        ...query,
+        isPublished: true,
+      },
+    );
+    const rs: PaginatedDto<ContributionDto> = {
+      total: count,
+      results: contributions.map(
+        (contribution) => new ContributionDto(contribution),
+      ),
+    };
+
+    return rs;
   }
 
   @Get(':id')
-  @ApiOperation({ summary: '*WIP* Find contribution by id' })
+  @Auth(Role.ADMIN, Role.MARKETING_CORDINATOR, Role.STUDENT)
+  @ApiOperation({ summary: 'Find contribution by id' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'Contribution not found' })
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<DetailedContributionDto> {
-    // @ts-ignore
-    return this.contributionService.findOne(+id);
+    return new DetailedContributionDto(
+      await this.contributionService.findOne(id),
+    );
+  }
+
+  @Get('published/:id')
+  @ApiOperation({ summary: 'Find published contribution by id' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  @ApiNotFoundResponse({ description: 'Contribution not found' })
+  async findPublishedOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<DetailedContributionDto> {
+    return new DetailedContributionDto(
+      await this.contributionService.findOne(id),
+    );
   }
 
   @Put(':id')
-  @ApiOperation({ summary: '*WIP* Update contribution' })
+  @Auth(Role.MARKETING_MANAGER, Role.STUDENT)
+  @ApiOperation({ summary: 'Update contribution' })
   async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateContributionDto: UpdateContributionDto,
+    @CurrentUser() user: User,
   ): Promise<DetailedContributionDto> {
-    // @ts-ignore
-    return this.contributionService.update(+id, updateContributionDto);
+    const contribution: Contribution = await this.contributionService.update(
+      id,
+      updateContributionDto,
+      user,
+    );
+
+    return new DetailedContributionDto(contribution);
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: '*WIP* Delete contribution' })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    // @ts-ignore
-    return this.contributionService.remove(+id);
+  @Auth(Role.MARKETING_MANAGER, Role.STUDENT)
+  @ApiOperation({ summary: 'Delete contribution' })
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.contributionService.remove(id, user);
   }
 
-  @Put(':id/files')
-  @ApiOperation({ summary: '*WIP* Add contribution files' })
-  async updateFiles(
+  @Post(':id/files')
+  @Auth(Role.STUDENT)
+  @ApiOperation({ summary: 'Add contribution files' })
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files'))
+  async addContributionFiles(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateContributionDto: UpdateContributionDto,
-  ): Promise<DetailedContributionDto> {
-    // @ts-ignore
-    return this.contributionService.update(+id, updateContributionDto);
+    @UploadedFiles() files: any,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    console.log(files);
+    await this.contributionFileService.addContributionFiles(id, user, files);
   }
 
-  @Delete(':id/files')
-  @ApiOperation({ summary: '*WIP* Delete contribution files' })
+  @Delete(':contributionId/files/:fileId')
+  @Auth(Role.STUDENT)
+  @ApiOperation({ summary: 'Delete contribution file' })
   async deleteFiles(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() updateContributionDto: UpdateContributionDto,
-  ): Promise<DetailedContributionDto> {
-    // @ts-ignore
-    return this.contributionService.update(+id, updateContributionDto);
+    @Param('contributionId', ParseIntPipe) contributionId: number,
+    @Param('fileId', ParseIntPipe) fileId: number,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.contributionFileService.deleteContributionFile(
+      contributionId,
+      user,
+      fileId,
+    );
   }
 
   @Post(':id/comments')
-  @Auth()
-  @ApiOperation({ summary: '*WIP* Comment on contribution' })
+  @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
+  @ApiOperation({ summary: 'Comment on contribution' })
   async comment(
-    @Param('id', ParseIntPipe) id: number,
-    @Query() createCommentDto: CreateCommentDto,
-  ): Promise<CommentDto> {
-    // @ts-ignore
-    return;
+    @Param('id', ParseIntPipe) contributionId: number,
+    @Body() createCommentDto: CreateCommentDto,
+    @CurrentUser() user: User,
+  ): Promise<ContributionCommentDto> {
+    return new ContributionCommentDto(
+      await this.contributionCommentService.comment(
+        createCommentDto,
+        contributionId,
+        user,
+      ),
+    );
   }
 
-  @Put(':contributionId/comments/:commentId')
-  @Auth()
-  @ApiOperation({ summary: '*WIP* Update comment' })
+  @Put('comments/:commentId')
+  @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
+  @ApiOperation({ summary: 'Update comment' })
   async updateComment(
-    @Param('contributionId', ParseIntPipe) contributionId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
     @Body() updateCommentDto: UpdateCommentDto,
-  ): Promise<CommentDto> {
-    // @ts-ignore
-    return;
+    @CurrentUser() user: User,
+  ): Promise<ContributionCommentDto> {
+    return new ContributionCommentDto(
+      await this.contributionCommentService.updateComment(
+        commentId,
+        user,
+        updateCommentDto,
+      ),
+    );
   }
 
-  @Delete(':contributionId/comments/:commentId')
+  @Delete('comments/:commentId')
   @Auth()
-  @ApiOperation({ summary: '*WIP* Delete comment' })
+  @ApiOperation({ summary: 'Delete comment' })
   async deleteComment(
-    @Param('contributionId', ParseIntPipe) contributionId: number,
     @Param('commentId', ParseIntPipe) commentId: number,
-  ): Promise<CommentDto> {
-    // @ts-ignore
-    return;
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.contributionCommentService.deleteComment(commentId, user);
   }
 }

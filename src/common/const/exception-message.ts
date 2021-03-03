@@ -12,6 +12,8 @@ export const ExceptionMessage = {
     CANT_DELETE_ADMIN: "Can't delete admin",
     CANT_UPDATE_OTHER_ADMIN: "Can't update other admin account",
     MUST_BE_UNIQUE: (entityName: string) => `${entityName} must be unique`,
+    NEW_SUBMISSION_DEADLINE_DUE: 'New submission deadline is due',
+    UPDATE_SUBMISSION_DEADLINE_DUE: 'Update submission deadline is due',
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',

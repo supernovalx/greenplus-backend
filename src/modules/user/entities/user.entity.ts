@@ -1,4 +1,5 @@
 import { Role } from 'src/common/enums/roles';
+import { ContributionComment } from 'src/modules/contribution/entities/contribution-comment.entity';
 import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
 import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
 import {
@@ -6,6 +7,7 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -46,6 +48,9 @@ export class User {
   @ManyToOne(() => Faculty, (faculty) => faculty.users, { onDelete: 'CASCADE' })
   faculty: Faculty;
 
-  @ManyToOne(() => Contribution, (contribution) => contribution.user)
-  contributions: Contribution;
+  @OneToMany(() => Contribution, (contribution) => contribution.user)
+  contributions: Contribution[];
+
+  @OneToMany(() => ContributionComment, (comment) => comment.user)
+  comments: ContributionComment[];
 }
