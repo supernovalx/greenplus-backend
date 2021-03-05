@@ -20,13 +20,15 @@ export class Contribution {
   @Column()
   userId: number;
 
-  @ManyToOne(() => User, (user) => user.contributions)
+  @ManyToOne(() => User, (user) => user.contributions, { onDelete: 'CASCADE' })
   user: User;
 
   @Column()
   facultyId: number;
 
-  @ManyToOne(() => Faculty, (faculty) => faculty.contributions)
+  @ManyToOne(() => Faculty, (faculty) => faculty.contributions, {
+    onDelete: 'CASCADE',
+  })
   faculty: Faculty;
 
   @OneToMany(() => ContributionComment, (comment) => comment.contribution)
