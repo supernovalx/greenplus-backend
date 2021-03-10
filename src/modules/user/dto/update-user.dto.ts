@@ -2,7 +2,7 @@ import {
   IsBoolean,
   IsEmail,
   IsNotEmpty,
-  IsNumberString,
+  IsNumber,
   IsOptional,
   IsString,
   Validate,
@@ -27,8 +27,7 @@ export class UpdateUserDto {
   password?: string;
 
   @IsOptional()
-  @IsNotEmpty()
-  @IsNumberString({ no_symbols: true })
+  @IsNumber()
   facultyId?: number;
 
   @IsOptional()
