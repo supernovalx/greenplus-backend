@@ -109,7 +109,7 @@ export class UserService {
     }
     // Check faculty exists
     if (updateUserDto.facultyId !== undefined) {
-      await this.facultyRepository.findOneById(id);
+      await this.facultyRepository.findOneById(updateUserDto.facultyId);
     }
     // Update user
     await this.userRepository.updateOne(id, updateUserDto);
