@@ -7,6 +7,7 @@ import { BaseRepository } from 'src/common/base.repository';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
 import { User } from './entities/user.entity';
 
 @EntityRepository(User)
@@ -44,18 +45,26 @@ export class UserRepository extends BaseRepository<User> {
 
   async findAll(
     paginatedQueryDto: PaginatedQueryDto,
-    query?: string,
-    facultyId?: number,
+    query: FindAllUserQueryDto,
   ): Promise<[User[], number]> {
     const qb: SelectQueryBuilder<User> = this.repository
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.faculty', 'faculty');
     // Filters
-    if (query) {
-      qb.andWhere('user.fullName LIKE :query', { query: `%${query}%` });
+    if (query.query) {
+      qb.andWhere('LOWER(user.fullName) LIKE LOWER(:query)', {
+        query: `%${query.query}%`,
+      });
     }
-    if (facultyId) {
-      qb.andWhere('user.facultyId = :facultyId', { facultyId: facultyId });
+    if (query.facultyId) {
+      qb.andWhere('user.facultyId = :facultyId', {
+        facultyId: query.facultyId,
+      });
+    }
+    if (query.role) {
+      qb.andWhere('user.role = :role', {
+        role: query.role,
+      });
     }
     // Pagination
     qb.skip(paginatedQueryDto.offset);

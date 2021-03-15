@@ -33,7 +33,9 @@ export class FacultyRepository extends BaseRepository<Faculty> {
     );
     // Filters
     if (query) {
-      qb.andWhere('faculty.name LIKE :query', { query: `%${query}%` });
+      qb.andWhere('LOWER(faculty.name) LIKE LOWER(:query)', {
+        query: `%${query}%`,
+      });
     }
     if (createAtOrderType) {
       qb.addOrderBy('faculty.createAt', createAtOrderType);
