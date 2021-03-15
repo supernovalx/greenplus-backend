@@ -35,7 +35,7 @@ export class ContributionRepository extends BaseRepository<Contribution> {
       .leftJoinAndSelect('contribution.user', 'user');
     // Filters
     if (query.query) {
-      qb.andWhere('contribution.name LIKE :query', {
+      qb.andWhere('LOWER(contribution.name) LIKE LOWER(:query)', {
         query: `%${query.query}%`,
       });
     }

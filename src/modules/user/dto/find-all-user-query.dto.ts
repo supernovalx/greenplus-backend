@@ -1,9 +1,12 @@
+import { ApiHideProperty } from '@nestjs/swagger';
 import {
+  IsEnum,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { Role } from 'src/common/enums/roles';
 
 export class FindAllUserQueryDto {
   @IsOptional()
@@ -11,7 +14,12 @@ export class FindAllUserQueryDto {
   @IsNotEmpty()
   query?: string;
 
-  @IsOptional()
-  @IsNumberString({ no_symbols: true })
+  // @IsOptional()
+  // @IsNumberString({ no_symbols: true })
+  @ApiHideProperty()
   facultyId?: number;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }

@@ -67,8 +67,7 @@ export class UserController {
     // Find all users
     const [users, count] = await this.userService.findAll(
       paginatedQueryDto,
-      findAllQueryDto.query,
-      findAllQueryDto.facultyId,
+      findAllQueryDto,
     );
     const rs: PaginatedDto<UserDto> = {
       total: count,

@@ -7,6 +7,7 @@ import { Faculty } from '../faculty/entities/faculty.entity';
 import { FacultyRepository } from '../faculty/faculty.repository';
 import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { UserRepository } from './user.repository';
@@ -72,13 +73,11 @@ export class UserService {
 
   async findAll(
     paginatedQueryDto: PaginatedQueryDto,
-    query?: string,
-    facultyId?: number,
+    findAllQueryDto: FindAllUserQueryDto,
   ): Promise<[User[], number]> {
     return await this.userRepository.findAll(
       paginatedQueryDto,
-      query,
-      facultyId,
+      findAllQueryDto,
     );
   }
 
