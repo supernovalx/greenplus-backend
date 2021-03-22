@@ -44,7 +44,9 @@ export class MailService {
   }
 
   async sendResetPasswordMail(email: string, token: string): Promise<void> {
-    const content = `Reset token: <br><b>${token}</b>`;
+    const content = `<a href='https://web-enterprise.vercel.app/reset-password/${encodeURI(
+      token,
+    )}'>Click here</a>`;
 
     await this.sendMail(email, 'Reset password', content);
   }
