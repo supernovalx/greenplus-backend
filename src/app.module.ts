@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContributionModule } from './modules/contribution/contribution.module';
 import { FacultyModule } from './modules/faculty/faculty.module';
@@ -11,6 +13,9 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'upload'),
+    }),
     AuthModule,
     UserModule,
     TypeOrmModule.forRoot(),
