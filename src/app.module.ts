@@ -13,9 +13,6 @@ import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'upload'),
-    }),
     AuthModule,
     UserModule,
     TypeOrmModule.forRoot(),

@@ -1,18 +1,20 @@
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import {
   DocumentBuilder,
   SwaggerCustomOptions,
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
+import { join } from 'path';
 import { AppModule } from './app.module';
 import { GlobalConfigKey } from './modules/global-config/config-keys';
 import { GlobalConfigRepository } from './modules/global-config/global-config.repository';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Swagger
   const config = new DocumentBuilder()
@@ -30,6 +32,9 @@ async function bootstrap() {
     },
   };
   SwaggerModule.setup('api-docs', app, document, customOptions);
+
+  // Serve static files
+  app.useStaticAssets(join(__dirname, '..', 'upload'));
 
   // class-validator
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
