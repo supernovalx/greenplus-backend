@@ -29,7 +29,16 @@ async function bootstrap() {
     AppModule,
     new ExpressAdapter(server),
   );
-  // await app.init();
+
+  // Get port
+  const configService = app.get(ConfigService);
+  const PORT = Number(configService.get<number>('PORT'));
+
+  http.createServer(server).listen(PORT || 3000);
+  const httpsOptions: HttpsOptions | null = readHttpsCertificate();
+  if (httpsOptions !== null) {
+    https.createServer(httpsOptions, server).listen(443);
+  }
 
   // Swagger
   const config = new DocumentBuilder()
@@ -48,15 +57,13 @@ async function bootstrap() {
   };
   SwaggerModule.setup('api-docs', app, document, customOptions);
 
+  await app.init();
+
   // Serve static files
   app.useStaticAssets(join(__dirname, '..', 'upload'));
 
   // class-validator, trim
   app.useGlobalPipes(new ValidationPipe({ transform: true }), new TrimPipe());
-
-  // Get port
-  const configService = app.get(ConfigService);
-  const PORT = Number(configService.get<number>('PORT'));
 
   // Seeding
   const globalConfigRepository = app.get(GlobalConfigRepository);
@@ -64,12 +71,6 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({ origin: '*' });
-
-  http.createServer(server).listen(PORT || 3000);
-  const httpsOptions: HttpsOptions | null = readHttpsCertificate();
-  if (httpsOptions !== null) {
-    https.createServer(httpsOptions, server).listen(443);
-  }
 }
 
 async function seedGlobalClosureDates(
