@@ -1,7 +1,11 @@
 import { ValidationPipe } from '@nestjs/common';
+import { HttpsOptions } from '@nestjs/common/interfaces/external/https-options.interface';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
+import {
+  ExpressAdapter,
+  NestExpressApplication,
+} from '@nestjs/platform-express';
 import {
   DocumentBuilder,
   SwaggerCustomOptions,
@@ -13,9 +17,19 @@ import { AppModule } from './app.module';
 import { TrimPipe } from './common/decorator/trim.pipe';
 import { GlobalConfigKey } from './modules/global-config/config-keys';
 import { GlobalConfigRepository } from './modules/global-config/global-config.repository';
+import * as fs from 'fs';
+import * as http from 'http';
+import * as https from 'https';
+// import express from 'express';
+const express = require('express');
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const server = express();
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    new ExpressAdapter(server),
+  );
+  // await app.init();
 
   // Swagger
   const config = new DocumentBuilder()
@@ -51,7 +65,11 @@ async function bootstrap() {
   // CORS
   app.enableCors({ origin: '*' });
 
-  await app.listen(PORT || 3000);
+  http.createServer(server).listen(PORT || 3000);
+  const httpsOptions: HttpsOptions | null = readHttpsCertificate();
+  if (httpsOptions !== null) {
+    https.createServer(httpsOptions, server).listen(443);
+  }
 }
 
 async function seedGlobalClosureDates(
@@ -68,6 +86,17 @@ async function seedGlobalClosureDates(
       key: GlobalConfigKey.SECOND_CLOSURE_DATE,
       value: new Date(3000, 1, 1).toISOString(),
     });
+  }
+}
+
+function readHttpsCertificate(): HttpsOptions | null {
+  try {
+    return {
+      key: fs.readFileSync('private.key'),
+      cert: fs.readFileSync('certificate.crt'),
+    };
+  } catch {
+    return null;
   }
 }
 
