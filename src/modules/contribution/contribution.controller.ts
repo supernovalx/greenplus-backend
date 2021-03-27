@@ -162,9 +162,27 @@ export class ContributionController {
   async findOne(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<DetailedContributionDto> {
-    return new DetailedContributionDto(
-      await this.contributionService.findOne(id),
+    const contribution: Contribution = await this.contributionService.findOne(
+      id,
     );
+    await this.contributionService.increaseView(id);
+
+    return new DetailedContributionDto(contribution);
+  }
+
+  @Get('published/:id')
+  @ApiOperation({ summary: 'Find published contribution by id' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  @ApiNotFoundResponse({ description: 'Contribution not found' })
+  async findPublishedOne(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<DetailedContributionDto> {
+    const contribution: Contribution = await this.contributionService.findOne(
+      id,
+    );
+    await this.contributionService.increaseView(id);
+
+    return new DetailedContributionDto(contribution);
   }
 
   @Post(':id/publish')
@@ -177,18 +195,6 @@ export class ContributionController {
     @CurrentUser() user: User,
   ): Promise<void> {
     await this.contributionService.publish(id, user);
-  }
-
-  @Get('published/:id')
-  @ApiOperation({ summary: 'Find published contribution by id' })
-  @ApiBadRequestResponse({ description: 'Invalid data' })
-  @ApiNotFoundResponse({ description: 'Contribution not found' })
-  async findPublishedOne(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<DetailedContributionDto> {
-    return new DetailedContributionDto(
-      await this.contributionService.findOne(id),
-    );
   }
 
   @Put(':id')

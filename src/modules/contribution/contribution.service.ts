@@ -138,6 +138,17 @@ export class ContributionService {
     });
   }
 
+  async increaseView(id: number, amount: number = 1): Promise<void> {
+    // Get contribution
+    const contribution: Contribution = await this.contributionRepository.findOneById(
+      id,
+    );
+    // Increase views
+    await this.contributionRepository.updateOne(id, {
+      views: contribution.views + amount,
+    });
+  }
+
   async remove(id: number, user: User): Promise<void> {
     const contribution: Contribution = await this.contributionRepository.findOneByIdWithRelations(
       id,
