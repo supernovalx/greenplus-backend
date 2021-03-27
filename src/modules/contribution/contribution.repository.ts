@@ -54,6 +54,9 @@ export class ContributionRepository extends BaseRepository<Contribution> {
         authorId: query.authorId,
       });
     }
+    if (query.viewOrderType) {
+      qb.addOrderBy('contribution.views', query.viewOrderType);
+    }
     // Pagination
     qb.skip(paginatedQueryDto.offset);
     qb.take(paginatedQueryDto.limit);

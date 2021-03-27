@@ -1,10 +1,12 @@
 import {
   IsBooleanString,
+  IsEnum,
   IsNotEmpty,
   IsNumberString,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { OrderType } from 'src/common/enums/order-types';
 
 export class FindAllContributionQueryDto {
   @IsOptional()
@@ -23,4 +25,8 @@ export class FindAllContributionQueryDto {
   @IsOptional()
   @IsNumberString({ no_symbols: true })
   facultyId?: number;
+
+  @IsOptional()
+  @IsEnum(OrderType)
+  viewOrderType?: OrderType;
 }
