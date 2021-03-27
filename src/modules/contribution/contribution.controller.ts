@@ -167,6 +167,18 @@ export class ContributionController {
     );
   }
 
+  @Post(':id/publish')
+  @Auth(Role.MARKETING_CORDINATOR)
+  @ApiOperation({ summary: 'Publish contribution' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  @ApiNotFoundResponse({ description: 'Contribution not found' })
+  async publish(
+    @Param('id', ParseIntPipe) id: number,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.contributionService.publish(id, user);
+  }
+
   @Get('published/:id')
   @ApiOperation({ summary: 'Find published contribution by id' })
   @ApiBadRequestResponse({ description: 'Invalid data' })

@@ -125,6 +125,19 @@ export class ContributionService {
     return await this.contributionRepository.findOneByIdWithRelations(id);
   }
 
+  async publish(id: number, user: User): Promise<void> {
+    const contribution: Contribution = await this.contributionRepository.findOneByIdWithRelations(
+      id,
+    );
+    if (user.faculty.id !== contribution.facultyId) {
+      throw new BadRequestException();
+    }
+
+    await this.contributionRepository.updateOne(id, {
+      isPublished: true,
+    });
+  }
+
   async remove(id: number, user: User): Promise<void> {
     const contribution: Contribution = await this.contributionRepository.findOneByIdWithRelations(
       id,
