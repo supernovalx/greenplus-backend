@@ -3,6 +3,7 @@ import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { diskStorage } from 'multer';
 import { FacultyModule } from '../faculty/faculty.module';
+import { GlobalConfigModule } from '../global-config/global-config.module';
 import { GlobalHelper } from '../helper/global.helper';
 import { HelperModule } from '../helper/helper.module';
 import { ContributionCommentRepository } from './contribution-comment.repository';
@@ -38,6 +39,7 @@ import { ContributionService } from './contribution.service';
       ContributionFileRepository,
     ]),
     FacultyModule,
+    GlobalConfigModule,
   ],
   controllers: [ContributionController],
   providers: [

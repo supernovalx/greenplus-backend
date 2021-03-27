@@ -3,11 +3,15 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { filter } from 'lodash';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { Role } from 'src/common/enums/roles';
 import { DeepPartial } from 'typeorm';
+import { Faculty } from '../faculty/entities/faculty.entity';
 import { FacultyRepository } from '../faculty/faculty.repository';
+import { GlobalConfigKey } from '../global-config/config-keys';
+import { GlobalConfigRepository } from '../global-config/global-config.repository';
 import { User } from '../user/entities/user.entity';
 import { ContributionCommentRepository } from './contribution-comment.repository';
 import { ContributionRepository } from './contribution.repository';
@@ -23,6 +27,7 @@ export class ContributionService {
     private contributionRepository: ContributionRepository,
     private contributionCommentRepository: ContributionCommentRepository,
     private facultyRepository: FacultyRepository,
+    private globalConfigRepository: GlobalConfigRepository,
   ) {}
   async createNewContribution(
     author: User,
@@ -33,6 +38,9 @@ export class ContributionService {
     if (!author.facultyId) {
       throw new InternalServerErrorException();
     }
+    // Check file types
+    await this.fitlerContributionFileTypes(files);
+    await this.fitlerContributionThumbnailFileTypes(thumbnail);
     // Check if user can submit new contributions
     if (!(await this.canUploadNewContributions(author.facultyId))) {
       throw new BadRequestException(
@@ -55,6 +63,35 @@ export class ContributionService {
       files: contributionFiles,
       thumbnail: thumbnail.filename,
     });
+  }
+
+  async fitlerContributionFileTypes(
+    files: Express.Multer.File[],
+  ): Promise<void> {
+    const allowedTypes: string[] = [
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/msword',
+      'image/png',
+      'image/jpeg',
+    ];
+    for (const file of files) {
+      if (!allowedTypes.some((type) => file.mimetype === type)) {
+        throw new BadRequestException(
+          ExceptionMessage.INVALID.CONTRIBUTION_CONTENT_FILE_TYPE_NOT_ALLOWED,
+        );
+      }
+    }
+  }
+
+  async fitlerContributionThumbnailFileTypes(
+    thumbnail: Express.Multer.File,
+  ): Promise<void> {
+    const allowedTypes: string[] = ['image/png', 'image/jpeg'];
+    if (!allowedTypes.some((type) => thumbnail.mimetype === type)) {
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.CONTRIBUTION_THUMBNAIL_FILE_TYPE_NOT_ALLOWED,
+      );
+    }
   }
 
   async findAll(
@@ -106,10 +143,44 @@ export class ContributionService {
   }
 
   async canUploadNewContributions(facultyId: number): Promise<boolean> {
-    return true;
+    // Current time
+    const now: Date = new Date();
+    // Get faculty
+    const faculty: Faculty = await this.facultyRepository.findOneById(
+      facultyId,
+    );
+    let deadLine: Date = new Date();
+    if (faculty.firstClosureDate) {
+      deadLine = faculty.firstClosureDate;
+    } else {
+      deadLine = new Date(
+        await this.globalConfigRepository.get(
+          GlobalConfigKey.FIRST_CLOSURE_DATE,
+        ),
+      );
+    }
+
+    return now < deadLine;
   }
 
   async canUpdateContributions(facultyId: number): Promise<boolean> {
-    return true;
+    // Current time
+    const now: Date = new Date();
+    // Get faculty
+    const faculty: Faculty = await this.facultyRepository.findOneById(
+      facultyId,
+    );
+    let deadLine: Date = new Date();
+    if (faculty.secondClosureDate) {
+      deadLine = faculty.secondClosureDate;
+    } else {
+      deadLine = new Date(
+        await this.globalConfigRepository.get(
+          GlobalConfigKey.SECOND_CLOSURE_DATE,
+        ),
+      );
+    }
+
+    return now < deadLine;
   }
 }

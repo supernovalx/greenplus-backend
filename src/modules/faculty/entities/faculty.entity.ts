@@ -16,10 +16,10 @@ export class Faculty {
   @Column({ unique: true })
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamptz' })
   firstClosureDate: Date;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'timestamptz' })
   secondClosureDate: Date;
 
   @CreateDateColumn()

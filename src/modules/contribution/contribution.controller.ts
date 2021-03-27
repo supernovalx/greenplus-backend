@@ -60,7 +60,7 @@ export class ContributionController {
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'files', maxCount: 2 },
+      { name: 'files', maxCount: 10 },
       { name: 'thumbnail', maxCount: 1 },
     ]),
   )

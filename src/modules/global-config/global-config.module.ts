@@ -8,6 +8,6 @@ import { GlobalConfigRepository } from './global-config.repository';
   imports: [TypeOrmModule.forFeature([GlobalConfigRepository])],
   controllers: [GlobalConfigController],
   providers: [GlobalConfigService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, GlobalConfigService],
 })
 export class GlobalConfigModule {}

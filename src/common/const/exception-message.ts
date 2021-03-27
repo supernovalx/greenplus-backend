@@ -14,6 +14,10 @@ export const ExceptionMessage = {
     MUST_BE_UNIQUE: (entityName: string) => `${entityName} must be unique`,
     NEW_SUBMISSION_DEADLINE_DUE: 'New submission deadline is due',
     UPDATE_SUBMISSION_DEADLINE_DUE: 'Update submission deadline is due',
+    CONTRIBUTION_CONTENT_FILE_TYPE_NOT_ALLOWED:
+      'Contribution content file type not allowed',
+    CONTRIBUTION_THUMBNAIL_FILE_TYPE_NOT_ALLOWED:
+      'Contribution thumbnail file type not allowed',
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',
