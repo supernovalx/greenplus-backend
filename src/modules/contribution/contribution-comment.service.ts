@@ -3,7 +3,6 @@ import { User } from '../user/entities/user.entity';
 import { ContributionCommentRepository } from './contribution-comment.repository';
 import { ContributionRepository } from './contribution.repository';
 import { CreateCommentDto } from './dto/create-comment.dto';
-import { UpdateCommentDto } from './dto/update-comment.dto';
 import { ContributionComment } from './entities/contribution-comment.entity';
 import { Contribution } from './entities/contribution.entity';
 
@@ -30,39 +29,6 @@ export class ContributionCommentService {
       ...createCommentDto,
       contributionId: contributionId,
       userId: author.id,
-    });
-  }
-
-  async updateComment(
-    id: number,
-    user: User,
-    updateCommentDto: UpdateCommentDto,
-  ): Promise<ContributionComment> {
-    const comment: ContributionComment = await this.contributionCommentRepository.findOneByIdWithRelations(
-      id,
-    );
-    if (comment.userId !== user.id || comment.isDeleted) {
-      throw new BadRequestException();
-    }
-    // Update comment
-    await this.contributionCommentRepository.updateOne(id, updateCommentDto);
-
-    return await this.contributionCommentRepository.findOneByIdWithRelations(
-      id,
-    );
-  }
-
-  async deleteComment(id: number, user: User): Promise<void> {
-    const comment: ContributionComment = await this.contributionCommentRepository.findOneByIdWithRelations(
-      id,
-    );
-    if (comment.userId !== user.id) {
-      throw new BadRequestException();
-    }
-    // Update comment
-    await this.contributionCommentRepository.updateOne(id, {
-      comment: 'This comment has been deleted',
-      isDeleted: true,
     });
   }
 }

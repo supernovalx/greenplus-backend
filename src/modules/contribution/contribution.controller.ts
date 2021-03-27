@@ -252,31 +252,4 @@ export class ContributionController {
       ),
     );
   }
-
-  @Put('comments/:commentId')
-  @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
-  @ApiOperation({ summary: 'Update comment' })
-  async updateComment(
-    @Param('commentId', ParseIntPipe) commentId: number,
-    @Body() updateCommentDto: UpdateCommentDto,
-    @CurrentUser() user: User,
-  ): Promise<ContributionCommentDto> {
-    return new ContributionCommentDto(
-      await this.contributionCommentService.updateComment(
-        commentId,
-        user,
-        updateCommentDto,
-      ),
-    );
-  }
-
-  @Delete('comments/:commentId')
-  @Auth()
-  @ApiOperation({ summary: 'Delete comment' })
-  async deleteComment(
-    @Param('commentId', ParseIntPipe) commentId: number,
-    @CurrentUser() user: User,
-  ): Promise<void> {
-    await this.contributionCommentService.deleteComment(commentId, user);
-  }
 }
