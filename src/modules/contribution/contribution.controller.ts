@@ -32,6 +32,7 @@ import { User } from '../user/entities/user.entity';
 import { ContributionCommentService } from './contribution-comment.service';
 import { ContributionFileService } from './contribution-file.service';
 import { ContributionService } from './contribution.service';
+import { AddContributionFilesDto } from './dto/add-contribution-files.dto';
 import { ContributionCommentDto } from './dto/contribution-comment.dto';
 import { ContributionDto } from './dto/contribution.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
@@ -95,27 +96,22 @@ export class ContributionController {
     @Query() query: FindAllContributionQueryDto,
     @CurrentUser() user: User,
   ): Promise<PaginatedDto<ContributionDto>> {
-    if (user) {
-      if (user.role === Role.MARKETING_MANAGER) {
-        // MARKETING_MANAGER can only view published contributions
+    if (user.role === Role.MARKETING_MANAGER) {
+      // MARKETING_MANAGER can only view published contributions
+      query.isPublished = true;
+    }
+    if (user.role === Role.MARKETING_CORDINATOR) {
+      // MARKETING_CORDINATOR can only view contributions of their faculty
+      query.facultyId = user.faculty.id;
+    }
+    if (user.role === Role.STUDENT) {
+      // STUDENT can only view unpublished contributions of themselves
+      if (!query.isPublished) {
+        query.authorId = user.id;
+        query.facultyId = user.faculty.id;
+      } else {
         query.isPublished = true;
       }
-      if (user.role === Role.MARKETING_CORDINATOR) {
-        // MARKETING_CORDINATOR can only view contributions of their faculty
-        query.facultyId = user.faculty.id;
-      }
-      if (user.role === Role.STUDENT) {
-        // STUDENT can only view unpublished contributions of themselves
-        if (!query.isPublished) {
-          query.authorId = user.id;
-          query.facultyId = user.faculty.id;
-        } else {
-          query.isPublished = true;
-        }
-      }
-    } else {
-      // Guest
-      query.isPublished = true;
     }
     // Find all contributions
     const [contributions, count] = await this.contributionService.findAll(
@@ -184,7 +180,7 @@ export class ContributionController {
   }
 
   @Put(':id')
-  @Auth(Role.MARKETING_MANAGER, Role.STUDENT)
+  @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
   @ApiOperation({ summary: 'Update contribution' })
   async update(
     @Param('id', ParseIntPipe) id: number,
@@ -201,7 +197,7 @@ export class ContributionController {
   }
 
   @Delete(':id')
-  @Auth(Role.MARKETING_MANAGER, Role.STUDENT)
+  @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
   @ApiOperation({ summary: 'Delete contribution' })
   async remove(
     @Param('id', ParseIntPipe) id: number,
@@ -217,7 +213,7 @@ export class ContributionController {
   @UseInterceptors(FilesInterceptor('files'))
   async addContributionFiles(
     @Param('id', ParseIntPipe) id: number,
-    @Body() updateContributionDto: UpdateContributionDto,
+    @Body() addContributionFilesDto: AddContributionFilesDto,
     @UploadedFiles() files: any,
     @CurrentUser() user: User,
   ): Promise<void> {
