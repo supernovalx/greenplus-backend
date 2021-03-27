@@ -10,6 +10,7 @@ import {
 } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { TrimPipe } from './common/decorator/trim.pipe';
 import { GlobalConfigKey } from './modules/global-config/config-keys';
 import { GlobalConfigRepository } from './modules/global-config/global-config.repository';
 
@@ -36,8 +37,8 @@ async function bootstrap() {
   // Serve static files
   app.useStaticAssets(join(__dirname, '..', 'upload'));
 
-  // class-validator
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  // class-validator, trim
+  app.useGlobalPipes(new ValidationPipe({ transform: true }), new TrimPipe());
 
   // Get port
   const configService = app.get(ConfigService);
