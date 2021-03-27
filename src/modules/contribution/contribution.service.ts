@@ -113,11 +113,19 @@ export class ContributionService {
     const contribution: Contribution = await this.contributionRepository.findOneByIdWithRelations(
       id,
     );
+    // STUDENT cannot update other student's contributions
     if (user.role === Role.STUDENT && user.id !== contribution.userId) {
       throw new BadRequestException();
     }
+    // Updater must be same faculty as the contribution
     if (user.faculty.id !== contribution.facultyId) {
       throw new BadRequestException();
+    }
+    // Check if user can update contributions
+    if (!(await this.canUpdateContributions(user.faculty.id))) {
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.UPDATE_SUBMISSION_DEADLINE_DUE,
+      );
     }
 
     await this.contributionRepository.updateOne(id, updateContributionDto);

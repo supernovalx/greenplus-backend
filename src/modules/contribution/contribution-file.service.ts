@@ -27,11 +27,11 @@ export class ContributionFileService {
     if (!author.facultyId) {
       throw new InternalServerErrorException();
     }
+    // Check file types
+    await this.contributionService.fitlerContributionFileTypes(files);
     // Check if user can update contributions
     if (
-      !(await this.contributionService.canUploadNewContributions(
-        author.facultyId,
-      ))
+      !(await this.contributionService.canUpdateContributions(author.facultyId))
     ) {
       throw new BadRequestException(
         ExceptionMessage.INVALID.UPDATE_SUBMISSION_DEADLINE_DUE,
@@ -63,9 +63,7 @@ export class ContributionFileService {
     }
     // Check if user can update contributions
     if (
-      !(await this.contributionService.canUploadNewContributions(
-        author.facultyId,
-      ))
+      !(await this.contributionService.canUpdateContributions(author.facultyId))
     ) {
       throw new BadRequestException(
         ExceptionMessage.INVALID.UPDATE_SUBMISSION_DEADLINE_DUE,
