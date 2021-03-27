@@ -56,4 +56,17 @@ export class MailService {
 
     await this.sendMail(user.email, 'Greenplus account information', content);
   }
+
+  async sendContributionDownloadMail(
+    email: string,
+    path: string,
+  ): Promise<void> {
+    const content = `<a href='${path}'>Download</a>`;
+
+    await this.sendMail(
+      email,
+      'Your Greenplus contributions download is ready!',
+      content,
+    );
+  }
 }

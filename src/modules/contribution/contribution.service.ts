@@ -1,10 +1,12 @@
+import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { filter } from 'lodash';
+import { Queue } from 'bull';
 import { ExceptionMessage } from 'src/common/const/exception-message';
+import { QueueConst } from 'src/common/const/queue';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { Role } from 'src/common/enums/roles';
 import { DeepPartial } from 'typeorm';
@@ -28,6 +30,8 @@ export class ContributionService {
     private contributionCommentRepository: ContributionCommentRepository,
     private facultyRepository: FacultyRepository,
     private globalConfigRepository: GlobalConfigRepository,
+    @InjectQueue(QueueConst.QUEUE.CONTRIBUTION)
+    private readonly contributionQueue: Queue,
   ) {}
   async createNewContribution(
     author: User,
@@ -172,6 +176,26 @@ export class ContributionService {
     }
 
     await this.contributionRepository.deleteOne(id);
+  }
+
+  async download(requester: User): Promise<void> {
+    const pulishedContributions: Contribution[] = await this.contributionRepository.findPublishedWithRelations();
+    if (pulishedContributions.length === 0) {
+      throw new BadRequestException(
+        ExceptionMessage.INVALID.NO_PUBLISHED_CONTRIBUTION,
+      );
+    }
+    // Add job
+    await this.contributionQueue.add(
+      QueueConst.JOB.ZIP,
+      {
+        email: requester.email,
+      },
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
   }
 
   async canUploadNewContributions(facultyId: number): Promise<boolean> {

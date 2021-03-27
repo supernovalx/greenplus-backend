@@ -18,6 +18,7 @@ export const ExceptionMessage = {
       'Contribution content file type not allowed',
     CONTRIBUTION_THUMBNAIL_FILE_TYPE_NOT_ALLOWED:
       'Contribution thumbnail file type not allowed',
+    NO_PUBLISHED_CONTRIBUTION: 'No published contribution to download',
   },
   FAILED: {
     HASH_PASSWORD: 'Failed to hash password',

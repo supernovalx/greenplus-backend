@@ -1,8 +1,7 @@
+import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { ContributionModule } from './modules/contribution/contribution.module';
 import { FacultyModule } from './modules/faculty/faculty.module';
@@ -24,6 +23,12 @@ import { UserModule } from './modules/user/user.module';
     ContributionModule,
     MailModule,
     GlobalConfigModule,
+    BullModule.forRoot({
+      redis: {
+        host: 'localhost',
+        port: 6379,
+      },
+    }),
   ],
   controllers: [],
   providers: [],

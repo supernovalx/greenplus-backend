@@ -25,6 +25,17 @@ export class ContributionRepository extends BaseRepository<Contribution> {
     return rs;
   }
 
+  async findPublishedWithRelations(): Promise<Contribution[]> {
+    const rs: Contribution[] = await this.repository.find({
+      relations: ['files'],
+      where: {
+        isPublished: true,
+      },
+    });
+
+    return rs;
+  }
+
   async findAll(
     paginatedQueryDto: PaginatedQueryDto,
     query: FindAllContributionQueryDto,

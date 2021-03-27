@@ -185,6 +185,14 @@ export class ContributionController {
     return new DetailedContributionDto(contribution);
   }
 
+  @Post(':id/publish/download')
+  @Auth(Role.MARKETING_MANAGER)
+  @ApiOperation({ summary: 'Download all published contributions as ZIP' })
+  @ApiBadRequestResponse({ description: 'Invalid data' })
+  async download(@CurrentUser() user: User): Promise<void> {
+    await this.contributionService.download(user);
+  }
+
   @Post(':id/publish')
   @Auth(Role.MARKETING_CORDINATOR)
   @ApiOperation({ summary: 'Publish contribution' })
