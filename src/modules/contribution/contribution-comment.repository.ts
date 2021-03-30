@@ -10,6 +10,19 @@ export class ContributionCommentRepository extends BaseRepository<ContributionCo
     super('Contribution comment');
   }
 
+  async findOneByContributionIdWithRelations(
+    contributionId: number,
+  ): Promise<ContributionComment[]> {
+    const rs: ContributionComment[] = await this.repository.find({
+      where: {
+        contributionId: contributionId,
+      },
+      relations: ['user'],
+    });
+
+    return rs;
+  }
+
   async findOneByIdWithRelations(id: number): Promise<ContributionComment> {
     const rs: ContributionComment | undefined = await this.repository.findOne(
       id,

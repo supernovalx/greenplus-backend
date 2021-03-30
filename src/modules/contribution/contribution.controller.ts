@@ -262,6 +262,17 @@ export class ContributionController {
     );
   }
 
+  @Get(':id/comments')
+  @ApiOperation({ summary: 'Get comments of contribution' })
+  async getComment(
+    @Param('id', ParseIntPipe) contributionId: number,
+    @CurrentUser() user: User,
+  ): Promise<ContributionCommentDto[]> {
+    return (await this.contributionCommentService.findAll(contributionId)).map(
+      (comment) => new ContributionCommentDto(comment),
+    );
+  }
+
   @Post(':id/comments')
   @Auth(Role.MARKETING_CORDINATOR, Role.STUDENT)
   @ApiOperation({ summary: 'Comment on contribution' })

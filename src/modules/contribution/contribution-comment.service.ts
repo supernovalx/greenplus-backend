@@ -13,6 +13,12 @@ export class ContributionCommentService {
     private contributionCommentRepository: ContributionCommentRepository,
   ) {}
 
+  async findAll(contributionId: number): Promise<ContributionComment[]> {
+    return await this.contributionCommentRepository.findOneByContributionIdWithRelations(
+      contributionId,
+    );
+  }
+
   async comment(
     createCommentDto: CreateCommentDto,
     contributionId: number,
