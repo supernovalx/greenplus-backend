@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { OrderType } from 'src/common/enums/order-types';
+import { ContributionRepository } from '../contribution/contribution.repository';
 import { GlobalHelper } from '../helper/global.helper';
 import { CreateFacultyDto } from './dto/create-faculty.dto';
 import { UpdateFacultyDto } from './dto/update-faculty.dto';
@@ -11,6 +12,7 @@ import { FacultyRepository } from './faculty.repository';
 export class FacultyService {
   constructor(
     private readonly facultyRepository: FacultyRepository,
+    private readonly contributionRepository: ContributionRepository,
     private readonly globalHelper: GlobalHelper,
   ) {}
 
@@ -59,6 +61,13 @@ export class FacultyService {
     }
     // Update faculty
     await this.facultyRepository.updateOne(id, updateFacultyDto);
+    // Delete all contribution of change deadline
+    if (
+      updateFacultyDto.firstClosureDate ||
+      updateFacultyDto.secondClosureDate
+    ) {
+      await this.contributionRepository.deleteByFacultyId(id);
+    }
     // Get updated faculty
     const updatedFaculty: Faculty = await this.facultyRepository.findOneById(
       id,

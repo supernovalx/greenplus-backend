@@ -1,8 +1,11 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BaseRepository } from 'src/common/base.repository';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
-import { EntityRepository, SelectQueryBuilder } from 'typeorm';
+import { DeleteResult, EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
 import { Contribution } from './entities/contribution.entity';
 
@@ -10,6 +13,26 @@ import { Contribution } from './entities/contribution.entity';
 export class ContributionRepository extends BaseRepository<Contribution> {
   constructor() {
     super('Contribution');
+  }
+
+  async deleteByFacultyId(facultyId: number): Promise<void> {
+    const deleteResult: DeleteResult = await this.repository.delete({
+      facultyId: facultyId,
+    });
+    // if (deleteResult.affected && deleteResult.affected === 0) {
+    //   throw new InternalServerErrorException(
+    //     ExceptionMessage.FAILED.DELETE_ENTITY(this.entityName),
+    //   );
+    // }
+  }
+
+  async deleteAll(): Promise<void> {
+    const deleteResult: DeleteResult = await this.repository.delete({});
+    // if (deleteResult.affected && deleteResult.affected === 0) {
+    //   throw new InternalServerErrorException(
+    //     ExceptionMessage.FAILED.DELETE_ENTITY(this.entityName),
+    //   );
+    // }
   }
 
   async findOneByIdWithRelations(id: number): Promise<Contribution> {

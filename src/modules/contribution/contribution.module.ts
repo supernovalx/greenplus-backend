@@ -1,5 +1,5 @@
 import { BullModule } from '@nestjs/bull';
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { diskStorage } from 'multer';
@@ -42,8 +42,8 @@ import { ContributionService } from './contribution.service';
       ContributionCommentRepository,
       ContributionFileRepository,
     ]),
-    FacultyModule,
-    GlobalConfigModule,
+    forwardRef(() => FacultyModule),
+    forwardRef(() => GlobalConfigModule),
     BullModule.registerQueue({
       name: QueueConst.QUEUE.CONTRIBUTION,
     }),

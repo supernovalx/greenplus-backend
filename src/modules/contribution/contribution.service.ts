@@ -178,7 +178,7 @@ export class ContributionService {
     await this.contributionRepository.deleteOne(id);
   }
 
-  async download(requester: User): Promise<void> {
+  async download(contributionIds: number[], requester: User): Promise<void> {
     const pulishedContributions: Contribution[] = await this.contributionRepository.findPublishedWithRelations();
     if (pulishedContributions.length === 0) {
       throw new BadRequestException(
@@ -190,6 +190,7 @@ export class ContributionService {
       QueueConst.JOB.ZIP,
       {
         email: requester.email,
+        contributionIds: contributionIds,
       },
       {
         removeOnComplete: true,

@@ -38,6 +38,7 @@ import { ContributionDto } from './dto/contribution.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateContributionDto } from './dto/create-contribution.dto';
 import { DetailedContributionDto } from './dto/detailed-contribution.dto';
+import { DownloadContributionsDto } from './dto/download-contribution.dto';
 import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
 import { FindAllPublishedContributionQueryDto } from './dto/find-all-published-contribution-query.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
@@ -189,8 +190,14 @@ export class ContributionController {
   @Auth(Role.MARKETING_MANAGER)
   @ApiOperation({ summary: 'Download all published contributions as ZIP' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
-  async download(@CurrentUser() user: User): Promise<void> {
-    await this.contributionService.download(user);
+  async download(
+    @Body() downloadContributionsDto: DownloadContributionsDto,
+    @CurrentUser() user: User,
+  ): Promise<void> {
+    await this.contributionService.download(
+      downloadContributionsDto.contributionIds,
+      user,
+    );
   }
 
   @Post(':id/publish')
