@@ -31,10 +31,16 @@ export class ContributionCommentService {
       throw new BadRequestException();
     }
 
-    return await this.contributionCommentRepository.create({
-      ...createCommentDto,
-      contributionId: contributionId,
-      userId: author.id,
-    });
+    const newComment: ContributionComment = await this.contributionCommentRepository.create(
+      {
+        ...createCommentDto,
+        contributionId: contributionId,
+        userId: author.id,
+      },
+    );
+
+    return await this.contributionCommentRepository.findOneByIdWithRelations(
+      newComment.id,
+    );
   }
 }
