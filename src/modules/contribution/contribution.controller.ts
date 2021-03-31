@@ -186,9 +186,9 @@ export class ContributionController {
     return new DetailedContributionDto(contribution);
   }
 
-  @Post(':id/publish/download')
+  @Post('published/download')
   @Auth(Role.MARKETING_MANAGER)
-  @ApiOperation({ summary: 'Download all published contributions as ZIP' })
+  @ApiOperation({ summary: 'Download selected published contributions as ZIP' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   async download(
     @Body() downloadContributionsDto: DownloadContributionsDto,
