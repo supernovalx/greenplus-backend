@@ -9,6 +9,7 @@ import { GlobalConfigModule } from './modules/global-config/global-config.module
 import { HelperModule } from './modules/helper/helper.module';
 import { MailModule } from './modules/mail/mail.module';
 import { UserModule } from './modules/user/user.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { UserModule } from './modules/user/user.module';
         port: 6379,
       },
     }),
+    ChatModule,
   ],
   controllers: [],
   providers: [],
