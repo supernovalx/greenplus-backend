@@ -48,7 +48,7 @@ async function bootstrap() {
   app.useStaticAssets(join(__dirname, '..', 'upload'));
 
   // class-validator, trim
-  app.useGlobalPipes(new ValidationPipe({ transform: true }), new TrimPipe());
+  app.useGlobalPipes(new TrimPipe(), new ValidationPipe({ transform: true }));
 
   // Get port
   const configService = app.get(ConfigService);

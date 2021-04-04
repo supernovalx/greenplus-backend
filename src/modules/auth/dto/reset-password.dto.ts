@@ -1,4 +1,11 @@
-import { IsJWT, IsNotEmpty, IsString, Validate } from 'class-validator';
+import {
+  IsJWT,
+  IsNotEmpty,
+  IsString,
+  MaxLength,
+  Validate,
+} from 'class-validator';
+import { Constrains } from 'src/common/const/constraint';
 import { ValidPassword } from 'src/common/validator/password.validator';
 
 export class ResetPasswordDto {
@@ -10,5 +17,6 @@ export class ResetPasswordDto {
   @IsString()
   @IsNotEmpty()
   @Validate(ValidPassword)
+  @MaxLength(Constrains.PASSWORD_MAX_LEN)
   newPassword: string;
 }

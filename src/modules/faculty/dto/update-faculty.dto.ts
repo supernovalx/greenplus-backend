@@ -1,16 +1,19 @@
-import { PartialType } from '@nestjs/mapped-types';
 import {
   IsDateString,
   IsNotEmpty,
   IsOptional,
   IsString,
+  MaxLength,
 } from 'class-validator';
-import { CreateFacultyDto } from './create-faculty.dto';
+import { Constrains } from 'src/common/const/constraint';
+import { IsAlphaSpace } from 'src/common/decorator/alpha-space.decorator';
 
-export class UpdateFacultyDto extends PartialType(CreateFacultyDto) {
+export class UpdateFacultyDto {
   @IsOptional()
   @IsNotEmpty()
   @IsString()
+  @IsAlphaSpace()
+  @MaxLength(Constrains.STRING_MAX_LEN)
   name?: string;
 
   @IsOptional()
