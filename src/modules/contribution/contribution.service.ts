@@ -117,7 +117,10 @@ export class ContributionService {
     paginatedQueryDto: PaginatedQueryDto,
     query: FindAllContributionQueryDto,
   ): Promise<[Contribution[], number]> {
-    return await this.contributionRepository.findAll(paginatedQueryDto, query);
+    return await this.contributionRepository.findAllWithPagination(
+      paginatedQueryDto,
+      query,
+    );
   }
 
   async findOne(id: number): Promise<Contribution> {

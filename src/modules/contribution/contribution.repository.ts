@@ -59,7 +59,7 @@ export class ContributionRepository extends BaseRepository<Contribution> {
     return rs;
   }
 
-  async findAll(
+  async findAllWithPagination(
     paginatedQueryDto: PaginatedQueryDto,
     query: FindAllContributionQueryDto,
   ): Promise<[Contribution[], number]> {
@@ -96,5 +96,9 @@ export class ContributionRepository extends BaseRepository<Contribution> {
     qb.take(paginatedQueryDto.limit);
 
     return await qb.getManyAndCount();
+  }
+
+  async findAll(): Promise<Contribution[]> {
+    return await this.repository.find();
   }
 }

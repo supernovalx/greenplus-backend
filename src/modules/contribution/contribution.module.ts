@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bull';
 import { forwardRef, Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { diskStorage } from 'multer';
 import { QueueConst } from 'src/common/const/queue';
@@ -50,6 +51,7 @@ import { ContributionService } from './contribution.service';
       name: QueueConst.QUEUE.CONTRIBUTION,
     }),
     MailModule,
+    ScheduleModule.forRoot()
   ],
   controllers: [ContributionController],
   providers: [
