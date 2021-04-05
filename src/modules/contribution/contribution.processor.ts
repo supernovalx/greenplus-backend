@@ -6,6 +6,8 @@ import { Job } from 'bull';
 import { QueueConst } from 'src/common/const/queue';
 import { GlobalHelper } from '../helper/global.helper';
 import { MailService } from '../mail/mail.service';
+import { User } from '../user/entities/user.entity';
+import { UserRepository } from '../user/user.repository';
 import { ContributionRepository } from './contribution.repository';
 import { Contribution } from './entities/contribution.entity';
 const fs = require('fs');
@@ -15,6 +17,7 @@ const archiver = require('archiver');
 export class ContributionProcessor {
   constructor(
     private contributionRepository: ContributionRepository,
+    private userRepository: UserRepository,
     private mailService: MailService,
     private configService: ConfigService,
     private globalHelper: GlobalHelper,
@@ -61,6 +64,27 @@ export class ContributionProcessor {
       }
     } catch (err) {
       console.error(err);
+    }
+  }
+
+  @Process(QueueConst.JOB.NEW_CONTRIBUTION)
+  async handleNewContribution(job: Job): Promise<void> {
+    // Get contribution from job data
+    const contribution: Contribution = job.data.contribution;
+    // Find all cordinators from the same faculty
+    const cordinators: User[] = await this.userRepository.findMarketingCordinatorByFacultyId(
+      contribution.facultyId,
+    );
+    // Send request for comment email
+    for (const cordinator of cordinators) {
+      try {
+        await this.mailService.sendRequestForCommentMail(
+          contribution,
+          cordinator.email,
+        );
+      } catch (err) {
+        console.log(err);
+      }
     }
   }
 }

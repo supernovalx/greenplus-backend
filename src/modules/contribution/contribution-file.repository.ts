@@ -10,6 +10,10 @@ export class ContributionFileRepository extends BaseRepository<ContributionFile>
     super('Contribution file');
   }
 
+  async findAll(): Promise<ContributionFile[]> {
+    return await this.repository.find();
+  }
+
   async findOneByIdWithRelations(id: number): Promise<ContributionFile> {
     const rs: ContributionFile | undefined = await this.repository.findOne(id, {
       relations: ['contribution'],

@@ -59,14 +59,29 @@ export class ContributionService {
       });
     }
     // Generate contribution
-    return await this.contributionRepository.create({
-      name: createContributionDto.name,
-      description: createContributionDto.description,
-      user: author,
-      faculty: author.faculty,
-      files: contributionFiles,
-      thumbnail: thumbnail.filename,
-    });
+    const newContribution: Contribution = await this.contributionRepository.create(
+      {
+        name: createContributionDto.name,
+        description: createContributionDto.description,
+        user: author,
+        faculty: author.faculty,
+        files: contributionFiles,
+        thumbnail: thumbnail.filename,
+      },
+    );
+    // Add job
+    await this.contributionQueue.add(
+      QueueConst.JOB.NEW_CONTRIBUTION,
+      {
+        contribution: newContribution,
+      },
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+
+    return newContribution;
   }
 
   async fitlerContributionFileTypes(
@@ -102,7 +117,10 @@ export class ContributionService {
     paginatedQueryDto: PaginatedQueryDto,
     query: FindAllContributionQueryDto,
   ): Promise<[Contribution[], number]> {
-    return await this.contributionRepository.findAll(paginatedQueryDto, query);
+    return await this.contributionRepository.findAllWithPagination(
+      paginatedQueryDto,
+      query,
+    );
   }
 
   async findOne(id: number): Promise<Contribution> {
