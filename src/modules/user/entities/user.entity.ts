@@ -1,4 +1,5 @@
 import { Role } from 'src/common/enums/roles';
+import { Message } from 'src/modules/chat/entity/message.entity';
 import { ContributionComment } from 'src/modules/contribution/entities/contribution-comment.entity';
 import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
 import { Faculty } from 'src/modules/faculty/entities/faculty.entity';
@@ -53,4 +54,10 @@ export class User {
 
   @OneToMany(() => ContributionComment, (comment) => comment.user)
   comments: ContributionComment[];
+
+  @OneToMany(() => Message, (chat) => chat.sender)
+  sentMessages: Message[];
+
+  @OneToMany(() => Message, (chat) => chat.receiver)
+  receivedMessages: Message[];
 }

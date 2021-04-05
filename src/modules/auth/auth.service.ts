@@ -108,6 +108,25 @@ export class AuthService {
     }
   }
 
+  async parseAccessToken(token: string): Promise<User | null> {
+    try {
+      // Check token valid
+      const resetPayload = await this.jwtService.verifyAsync<ResetPasswordTokenResponseDto>(
+        token,
+      );
+      // Check user exists
+      const userFind: User = await this.userRepository.findOneById(
+        resetPayload.sub,
+      );
+
+      return userFind;
+    } catch (err) {
+      console.log(err);
+
+      return null;
+    }
+  }
+
   async sendResetPasswordMail(email: string): Promise<void> {
     // Find user
     const userFind: User = await this.userRepository.findOneByEmailWithRelations(
