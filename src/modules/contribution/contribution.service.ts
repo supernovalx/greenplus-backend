@@ -59,14 +59,29 @@ export class ContributionService {
       });
     }
     // Generate contribution
-    return await this.contributionRepository.create({
-      name: createContributionDto.name,
-      description: createContributionDto.description,
-      user: author,
-      faculty: author.faculty,
-      files: contributionFiles,
-      thumbnail: thumbnail.filename,
-    });
+    const newContribution: Contribution = await this.contributionRepository.create(
+      {
+        name: createContributionDto.name,
+        description: createContributionDto.description,
+        user: author,
+        faculty: author.faculty,
+        files: contributionFiles,
+        thumbnail: thumbnail.filename,
+      },
+    );
+    // Add job
+    await this.contributionQueue.add(
+      QueueConst.JOB.NEW_CONTRIBUTION,
+      {
+        contribution: newContribution,
+      },
+      {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
+    );
+
+    return newContribution;
   }
 
   async fitlerContributionFileTypes(

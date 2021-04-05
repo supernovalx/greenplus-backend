@@ -4,5 +4,6 @@ export const QueueConst = {
   },
   JOB: {
     ZIP: 'ZIP',
+    NEW_CONTRIBUTION: 'NEW_CONTRIBUTION',
   },
 };

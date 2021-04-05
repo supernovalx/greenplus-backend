@@ -1,11 +1,11 @@
 import {
-  BadRequestException,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { BaseRepository } from 'src/common/base.repository';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
+import { Role } from 'src/common/enums/roles';
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { FindAllUserQueryDto } from './dto/find-all-user-query.dto';
 import { User } from './entities/user.entity';
@@ -39,6 +39,14 @@ export class UserRepository extends BaseRepository<User> {
         ExceptionMessage.NOT_FOUND.ENTITY(this.entityName),
       );
     }
+
+    return rs;
+  }
+
+  async findMarketingCordinatorByFacultyId(facultyId: number): Promise<User[]> {
+    const rs: User[] = await this.repository.find({
+      where: { facultyId: facultyId, role: Role.MARKETING_CORDINATOR },
+    });
 
     return rs;
   }

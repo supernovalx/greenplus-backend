@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { ExceptionMessage } from 'src/common/const/exception-message';
+import { Contribution } from '../contribution/entities/contribution.entity';
 import { User } from '../user/entities/user.entity';
 
 @Injectable()
@@ -66,6 +67,16 @@ export class MailService {
     await this.sendMail(
       email,
       'Your Greenplus contributions download is ready!',
+      content,
+    );
+  }
+
+  async sendRequestForCommentMail(contribution: Contribution, email: string) {
+    const content = `A student ${contribution.user.fullName} has submitted a new contribution (${contribution.name}). Please comment within 14 days`;
+
+    await this.sendMail(
+      email,
+      'A student has submitted a new contribution',
       content,
     );
   }
