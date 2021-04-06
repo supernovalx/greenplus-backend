@@ -42,7 +42,6 @@ export class MessageRepository extends BaseRepository<Message> {
   async findAll(
     senderId: number,
     receiverId: number,
-    paginatedQueryDto: PaginatedQueryDto,
     query: FindAllMessageQueryDto,
   ): Promise<[Message[], number]> {
     const qb: SelectQueryBuilder<Message> = this.repository.createQueryBuilder(
@@ -63,8 +62,7 @@ export class MessageRepository extends BaseRepository<Message> {
     // Order
     qb.orderBy('message.id', 'DESC');
     // Pagination
-    qb.skip(paginatedQueryDto.offset);
-    qb.take(paginatedQueryDto.limit);
+    qb.take(query.limit);
 
     return await qb.getManyAndCount();
   }

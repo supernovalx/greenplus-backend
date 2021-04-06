@@ -54,13 +54,11 @@ export class MessageService {
   async getMessages(
     senderId: number,
     receiverId: number,
-    paginatedQueryDto: PaginatedQueryDto,
     findAllQueryDto: FindAllMessageQueryDto,
   ): Promise<[Message[], number]> {
     return await this.messageRepository.findAll(
       senderId,
       receiverId,
-      paginatedQueryDto,
       findAllQueryDto,
     );
   }

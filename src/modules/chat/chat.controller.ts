@@ -33,14 +33,12 @@ export class ChatController {
   async getMessage(
     @CurrentUser() user: User,
     @Param('receiverId', ParseIntPipe) receiverId: number,
-    @Query() paginatedQueryDto: PaginatedQueryDto,
     @Query() findAllMessageDto: FindAllMessageQueryDto,
   ): Promise<PaginatedDto<MessageDto>> {
     // Find all messages
     const [messages, count] = await this.messageService.getMessages(
       user.id,
       receiverId,
-      paginatedQueryDto,
       findAllMessageDto,
     );
     const rs: PaginatedDto<MessageDto> = {
