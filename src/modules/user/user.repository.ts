@@ -88,4 +88,8 @@ export class UserRepository extends BaseRepository<User> {
       throw new InternalServerErrorException(ExceptionMessage.FAILED.QUERY);
     }
   }
+
+  async findByIdsWithRelations(ids: number[]): Promise<User[]> {
+    return await this.repository.findByIds(ids, { relations: ['faculty'] });
+  }
 }
