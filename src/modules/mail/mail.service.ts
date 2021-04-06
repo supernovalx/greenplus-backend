@@ -45,7 +45,7 @@ export class MailService {
   }
 
   async sendResetPasswordMail(email: string, token: string): Promise<void> {
-    const content = `<a href='https://web-enterprise.vercel.app/reset-password/${encodeURI(
+    const content = `<a href='https://greenplus.vercel.app/reset-password/${encodeURI(
       token,
     )}'>Click here</a>`;
 
