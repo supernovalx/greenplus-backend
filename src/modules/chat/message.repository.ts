@@ -7,4 +7,8 @@ export class MessageRepository extends BaseRepository<Message> {
   constructor() {
     super('Message');
   }
+
+  async findBySenderId(senderId: number): Promise<Message[]> {
+    return this.repository.find({ where: { senderId: senderId } });
+  }
 }
