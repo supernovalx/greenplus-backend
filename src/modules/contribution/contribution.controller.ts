@@ -34,7 +34,6 @@ import { ContributionFileService } from './contribution-file.service';
 import { ContributionService } from './contribution.service';
 import { AddContributionFilesDto } from './dto/add-contribution-files.dto';
 import { ContributionCommentDto } from './dto/contribution-comment.dto';
-import { ContributionCountByFacultyDto } from './dto/contribution-count-by-faculty.dto';
 import { ContributionDto } from './dto/contribution.dto';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { CreateContributionDto } from './dto/create-contribution.dto';
@@ -42,6 +41,7 @@ import { DetailedContributionDto } from './dto/detailed-contribution.dto';
 import { DownloadContributionsDto } from './dto/download-contribution.dto';
 import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
 import { FindAllPublishedContributionQueryDto } from './dto/find-all-published-contribution-query.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 import { UpdateContributionDto } from './dto/update-contribution.dto';
 import { Contribution } from './entities/contribution.entity';
 
@@ -127,13 +127,6 @@ export class ContributionController {
     };
 
     return rs;
-  }
-
-  @Get('countByFaculty')
-  @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
-  @ApiOperation({ summary: 'Count number of contributions of each faculty' })
-  async countByFaculty(): Promise<ContributionCountByFacultyDto[]> {
-    return await this.contributionService.countByFaculty();
   }
 
   @Get('published')

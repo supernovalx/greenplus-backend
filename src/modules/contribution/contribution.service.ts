@@ -17,7 +17,6 @@ import { GlobalConfigRepository } from '../global-config/global-config.repositor
 import { User } from '../user/entities/user.entity';
 import { ContributionCommentRepository } from './contribution-comment.repository';
 import { ContributionRepository } from './contribution.repository';
-import { ContributionCountByFacultyDto } from './dto/contribution-count-by-faculty.dto';
 import { CreateContributionDto } from './dto/create-contribution.dto';
 import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
 import { UpdateContributionDto } from './dto/update-contribution.dto';
@@ -83,10 +82,6 @@ export class ContributionService {
     );
 
     return newContribution;
-  }
-
-  async countByFaculty(): Promise<ContributionCountByFacultyDto[]> {
-    return await this.contributionRepository.countByFaculty();
   }
 
   async fitlerContributionFileTypes(

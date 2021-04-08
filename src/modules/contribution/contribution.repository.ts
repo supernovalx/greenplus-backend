@@ -1,9 +1,11 @@
-import { NotFoundException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { BaseRepository } from 'src/common/base.repository';
 import { ExceptionMessage } from 'src/common/const/exception-message';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { DeleteResult, EntityRepository, SelectQueryBuilder } from 'typeorm';
-import { ContributionCountByFacultyDto } from './dto/contribution-count-by-faculty.dto';
 import { FindAllContributionQueryDto } from './dto/find-all-contribution-query.dto';
 import { Contribution } from './entities/contribution.entity';
 
@@ -98,18 +100,5 @@ export class ContributionRepository extends BaseRepository<Contribution> {
 
   async findAll(): Promise<Contribution[]> {
     return await this.repository.find();
-  }
-
-  async countByFaculty(): Promise<ContributionCountByFacultyDto[]> {
-    return this.repository
-      .createQueryBuilder('contribution')
-      .leftJoinAndSelect('contribution.faculty', 'faculty')
-      .select([
-        'COUNT(*) AS count',
-        'MIN(faculty.name) AS facultyName',
-        'contribution.facultyId AS facultyId',
-      ])
-      .groupBy('contribution.facultyId')
-      .getRawMany();
   }
 }
