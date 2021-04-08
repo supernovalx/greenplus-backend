@@ -28,9 +28,9 @@ export class FacultyRepository extends BaseRepository<Faculty> {
     query?: string,
     createAtOrderType?: OrderType,
   ): Promise<[Faculty[], number]> {
-    const qb: SelectQueryBuilder<Faculty> = this.repository.createQueryBuilder(
-      'faculty',
-    );
+    const qb: SelectQueryBuilder<Faculty> = this.repository
+      .createQueryBuilder('faculty')
+      .leftJoinAndSelect('faculty.contributions', 'contributions');
     // Filters
     if (query) {
       qb.andWhere('LOWER(faculty.name) LIKE LOWER(:query)', {
