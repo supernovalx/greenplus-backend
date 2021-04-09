@@ -31,9 +31,9 @@ export class ChatGateway
   }
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Handle connection `);
-    console.log(client.handshake.headers.token);
+    console.log(client.handshake.auth);
 
-    const token = client.handshake.headers.token;
+    const token = client.handshake.auth.token;
     const user: User | null = await this.authService.parseAccessToken(token);
     if (user === null) {
       console.log('Invalid user');
