@@ -34,6 +34,12 @@ export class ChatGateway
     console.log(client.handshake.auth);
 
     const token = client.handshake.auth.token;
+    if (token === undefined) {
+      console.log('No auth token');
+      client.disconnect(true);
+
+      return;
+    }
     const user: User | null = await this.authService.parseAccessToken(token);
     if (user === null) {
       console.log('Invalid user');
