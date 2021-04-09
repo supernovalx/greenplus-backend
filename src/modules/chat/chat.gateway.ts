@@ -31,9 +31,9 @@ export class ChatGateway
   }
   async handleConnection(client: Socket, ...args: any[]) {
     console.log(`Handle connection `);
-    console.log(client.handshake.auth);
+    console.log(client.handshake.query['token']);
 
-    const token = client.handshake.auth?.token;
+    const token = client.handshake.query['token'];
     if (token === undefined) {
       console.log('No auth token');
       client.disconnect(true);
