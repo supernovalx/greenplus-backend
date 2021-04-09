@@ -33,7 +33,7 @@ export class ChatGateway
     console.log(`Handle connection `);
     console.log(client.handshake.auth);
 
-    const token = client.handshake.auth.token;
+    const token = client.handshake.auth?.token;
     if (token === undefined) {
       console.log('No auth token');
       client.disconnect(true);
