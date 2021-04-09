@@ -105,20 +105,31 @@ export class ChatGateway
     });
 
     // Emit message to receiver
-    const receiverSocket: Socket | undefined = this.getSocketFromUserId(
-      payload.receiverId,
-    );
-    if (receiverSocket) {
-      const serverMessageDto: ServerMessageDto = {
-        id: message.id,
-        createdAt: message.createAt,
-        message: payload.message,
-        senderId: senderId,
-      };
-      receiverSocket.emit('server_message', serverMessageDto);
-    } else {
-      console.log('Cant fint receiver socket');
+    for (const receiverClient of this.connectedClients) {
+      if (receiverClient.userId === payload.receiverId) {
+        const serverMessageDto: ServerMessageDto = {
+          id: message.id,
+          createdAt: message.createAt,
+          message: payload.message,
+          senderId: senderId,
+        };
+        receiverClient.socket.emit('server_message', serverMessageDto);
+      }
     }
+    // const receiverSocket: Socket | undefined = this.getSocketFromUserId(
+    //   payload.receiverId,
+    // );
+    // if (receiverSocket) {
+    //   const serverMessageDto: ServerMessageDto = {
+    //     id: message.id,
+    //     createdAt: message.createAt,
+    //     message: payload.message,
+    //     senderId: senderId,
+    //   };
+    //   receiverSocket.emit('server_message', serverMessageDto);
+    // } else {
+    //   console.log('Cant fint receiver socket');
+    // }
 
     return 'ok';
   }
