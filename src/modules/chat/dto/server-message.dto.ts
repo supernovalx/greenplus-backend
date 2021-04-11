@@ -5,5 +5,7 @@ export class ServerMessageDto {
 
   senderId: number;
 
+  senderName: string;
+
   createdAt: Date;
 }

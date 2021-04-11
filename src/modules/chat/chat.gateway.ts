@@ -48,11 +48,12 @@ export class ChatGateway
       return;
     }
     console.log(`${user?.fullName} connected`);
-    const userSocket: UserSocket = { userId: user.id, socket: client };
+    const userSocket: UserSocket = { user: user, socket: client };
     this.connectedClients.push(userSocket);
 
     this.printConnectedClient();
   }
+
   handleDisconnect(client: any) {
     console.log(`Handle disconnect `);
 
@@ -65,7 +66,7 @@ export class ChatGateway
     console.log('--------------------------------');
     console.log('Connected clients');
     for (const userSocket of this.connectedClients) {
-      console.log(userSocket.userId);
+      console.log(userSocket.user.fullName, userSocket.user.id);
     }
     console.log('--------------------------------');
   }
@@ -106,12 +107,13 @@ export class ChatGateway
 
     // Emit message to receiver
     for (const receiverClient of this.connectedClients) {
-      if (receiverClient.userId === payload.receiverId) {
+      if (receiverClient.user.id === payload.receiverId) {
         const serverMessageDto: ServerMessageDto = {
           id: message.id,
           createdAt: message.createAt,
           message: payload.message,
           senderId: senderId,
+          senderName: receiverClient.user.fullName,
         };
         receiverClient.socket.emit('server_message', serverMessageDto);
       }
@@ -155,18 +157,18 @@ export class ChatGateway
   getUserIdFromSocket(client: Socket): number | undefined {
     return this.connectedClients.find(
       (userSocket) => userSocket.socket.id === client.id,
-    )?.userId;
+    )?.user.id;
   }
 
-  getSocketFromUserId(userId: number): Socket | undefined {
-    console.log(`Find ${userId}`);
-    return this.connectedClients.find(
-      (userSocket) => userSocket.userId === userId,
-    )?.socket;
-  }
+  // getSocketFromUserId(userId: number): Socket | undefined {
+  //   console.log(`Find ${userId}`);
+  //   return this.connectedClients.find(
+  //     (userSocket) => userSocket.userId === userId,
+  //   )?.socket;
+  // }
 }
 
 interface UserSocket {
-  userId: number;
+  user: User;
   socket: Socket;
 }
