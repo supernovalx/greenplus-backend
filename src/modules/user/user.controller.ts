@@ -51,7 +51,7 @@ export class UserController {
   }
 
   @Get()
-  @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
+  @Auth()
   @ApiOperation({ summary: 'Find all users' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiPaginatedResponse(UserDto)
@@ -63,6 +63,11 @@ export class UserController {
     // Cordinator can only view their faculty's students
     if (user.role === Role.MARKETING_CORDINATOR) {
       findAllQueryDto.facultyId = user.facultyId;
+    }
+    // Student can only find CORDINATOR
+    if (user.role === Role.STUDENT) {
+      findAllQueryDto.facultyId = user.facultyId;
+      findAllQueryDto.role = Role.MARKETING_CORDINATOR;
     }
     // Find all users
     const [users, count] = await this.userService.findAll(
@@ -78,7 +83,7 @@ export class UserController {
   }
 
   @Get(':id')
-  @Auth(Role.ADMIN, Role.MARKETING_MANAGER, Role.MARKETING_CORDINATOR)
+  @Auth()
   @ApiOperation({ summary: 'Find user by id' })
   @ApiBadRequestResponse({ description: 'Invalid data' })
   @ApiNotFoundResponse({ description: 'User not found' })
