@@ -47,7 +47,7 @@ export class MailService {
   async sendResetPasswordMail(email: string, token: string): Promise<void> {
     const content = `<a href='https://greenplus.vercel.app/reset-password/${encodeURI(
       token,
-    )}'>Click here</a>`;
+    )}'>Click here reset your password</a>`;
 
     await this.sendMail(email, 'Reset password', content);
   }
@@ -62,7 +62,7 @@ export class MailService {
     email: string,
     path: string,
   ): Promise<void> {
-    const content = `<a href='${path}'>Download</a>`;
+    const content = `<a href='${path}'>Click here to download contributions</a>`;
 
     await this.sendMail(
       email,
