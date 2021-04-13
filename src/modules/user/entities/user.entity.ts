@@ -1,5 +1,4 @@
 import { Role } from 'src/common/enums/roles';
-import { Conversation } from 'src/modules/chat/entity/conversation.entity';
 import { Message } from 'src/modules/chat/entity/message.entity';
 import { ContributionComment } from 'src/modules/contribution/entities/contribution-comment.entity';
 import { Contribution } from 'src/modules/contribution/entities/contribution.entity';
@@ -62,7 +61,4 @@ export class User {
 
   @OneToMany(() => Message, (chat) => chat.receiver)
   receivedMessages: Message[];
-
-  @ManyToMany(() => Conversation, (conversation) => conversation.users)
-  conversations: Conversation[];
 }

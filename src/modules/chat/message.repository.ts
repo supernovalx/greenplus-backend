@@ -1,3 +1,5 @@
+import { Cipher } from 'crypto';
+import { max, uniqBy } from 'lodash';
 import { BaseRepository } from 'src/common/base.repository';
 import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
@@ -10,33 +12,47 @@ export class MessageRepository extends BaseRepository<Message> {
     super('Message');
   }
 
-  async findConversationsBySenderId(
-    senderId: number,
-  ): Promise<DistinctConversationResult[]> {
-    let distinctConversations: DistinctConversationResult[] = await this.repository
+  async findConversationsOfUser(userId: number): Promise<Conversation[]> {
+    let conversations: Conversation[] = await this.repository
       .createQueryBuilder('message')
       .select([
         'COUNT(*) as count',
         'message.receiverId AS receiverId',
-        'MAX(message.id) as id',
+        'MAX(message.id) as lastmessageid',
       ])
       .groupBy('message.receiverId')
-      .where('message.senderId = :senderId', { senderId: senderId })
+      .where('message.senderId = :senderId', { senderId: userId })
       .getRawMany();
-    distinctConversations.push(
+    conversations.push(
       ...((await this.repository
         .createQueryBuilder('message')
         .select([
           'COUNT(*) as count',
           'message.senderId AS receiverId',
-          'MAX(message.id) as id',
+          'MAX(message.id) as lastmessageid',
         ])
         .groupBy('message.senderId')
-        .where('message.receiverId = :receiverId', { receiverId: senderId })
-        .getRawMany()) as DistinctConversationResult[]),
+        .where('message.receiverId = :receiverId', { receiverId: userId })
+        .getRawMany()) as Conversation[]),
     );
+    console.log(conversations);
+    let rs = uniqBy(conversations, (conversation) => conversation.receiverid);
+    console.log(rs);
+    // @ts-ignore
+    let rs2 = rs.map((conversation) => {
+      return {
+        ...conversation,
+        lastmessageid: max(
+          conversations
+            .filter((c) => conversation.receiverid === c.receiverid)
+            .map((c) => c.lastmessageid),
+        ),
+      };
+    });
 
-    return distinctConversations;
+    console.log(rs2);
+    // @ts-ignore
+    return rs2;
   }
 
   async findAll(
@@ -72,8 +88,7 @@ export class MessageRepository extends BaseRepository<Message> {
   }
 }
 
-export interface DistinctConversationResult {
-  count: string;
+export interface Conversation {
   receiverid: number;
-  id: number;
+  lastmessageid: number;
 }
