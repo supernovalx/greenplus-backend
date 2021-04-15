@@ -84,15 +84,16 @@ export class ChatGateway
       return validationResult;
     }
 
-    // Get senderId
-    const senderId: number | undefined = this.getUserIdFromSocket(socket);
-    if (senderId === undefined || senderId === payload.receiverId) {
+    // Get sender user
+    const sender: User | undefined = this.getUserFromSocket(socket);
+    // Prevent send message to self
+    if (sender === undefined || sender.id === payload.receiverId) {
       socket.disconnect();
 
       return '';
     }
 
-    console.log(`Received message from ${senderId}`);
+    console.log(`Received message from ${sender}`);
     console.log(typeof payload);
 
     // Save message to database
@@ -102,7 +103,7 @@ export class ChatGateway
     const message: Message = await this.messageRepository.create({
       content: payload.message,
       receiverId: payload.receiverId,
-      senderId: senderId,
+      senderId: sender.id,
     });
 
     // Emit message to receiver
@@ -112,8 +113,8 @@ export class ChatGateway
           id: message.id,
           createdAt: message.createAt,
           message: payload.message,
-          senderId: senderId,
-          senderName: receiverClient.user.fullName,
+          senderId: sender.id,
+          senderName: sender.fullName,
         };
         receiverClient.socket.emit('server_message', serverMessageDto);
       }
@@ -154,10 +155,10 @@ export class ChatGateway
     return null;
   }
 
-  getUserIdFromSocket(client: Socket): number | undefined {
+  getUserFromSocket(client: Socket): User | undefined {
     return this.connectedClients.find(
       (userSocket) => userSocket.socket.id === client.id,
-    )?.user.id;
+    )?.user;
   }
 
   // getSocketFromUserId(userId: number): Socket | undefined {
