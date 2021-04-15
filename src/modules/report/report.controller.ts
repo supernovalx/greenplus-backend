@@ -44,8 +44,9 @@ export class ReportController {
     // );
     rs.largestSubmissionCountOfSingleFaculty = largestPublishedCountOfSingleFaculty;
     rs.newSubmissionsIn7Days = newSubmissionsIn7Days;
-    rs.percentOfStudentHasSubmitted = submittedStudents / totalUser;
-    rs.percentOfFacultyHasSubmitted = submittedFaculties / totalFaculty;
+    rs.percentOfStudentHasSubmitted = (submittedStudents / totalUser) * 100.0;
+    rs.percentOfFacultyHasSubmitted =
+      (submittedFaculties / totalFaculty) * 100.0;
 
     return rs;
   }
