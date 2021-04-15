@@ -1,5 +1,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Role } from 'src/common/enums/roles';
+import { Auth } from '../auth/decorator/auth.decorator';
 import { ContributionRepository } from '../contribution/contribution.repository';
 import { FacultyRepository } from '../faculty/faculty.repository';
 import { UserRepository } from '../user/user.repository';
@@ -15,6 +17,7 @@ export class ReportController {
   ) {}
 
   @Get()
+  @Auth(Role.MARKETING_MANAGER)
   @ApiOperation({ summary: 'Get site statistics' })
   async getSiteStatistics(): Promise<SiteStatisticsDto> {
     const rs: SiteStatisticsDto = new SiteStatisticsDto();
