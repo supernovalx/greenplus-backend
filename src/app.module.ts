@@ -10,6 +10,7 @@ import { HelperModule } from './modules/helper/helper.module';
 import { MailModule } from './modules/mail/mail.module';
 import { UserModule } from './modules/user/user.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ChatModule } from './modules/chat/chat.module';
       },
     }),
     ChatModule,
+    ReportModule,
   ],
   controllers: [],
   providers: [],

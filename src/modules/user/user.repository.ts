@@ -92,4 +92,8 @@ export class UserRepository extends BaseRepository<User> {
   async findByIdsWithRelations(ids: number[]): Promise<User[]> {
     return await this.repository.findByIds(ids, { relations: ['faculty'] });
   }
+
+  async countTotalStudent(): Promise<number> {
+    return await this.repository.count({ where: { role: Role.STUDENT } });
+  }
 }

@@ -46,4 +46,8 @@ export class FacultyRepository extends BaseRepository<Faculty> {
 
     return await qb.getManyAndCount();
   }
+
+  async countTotal(): Promise<number> {
+    return await this.repository.count();
+  }
 }

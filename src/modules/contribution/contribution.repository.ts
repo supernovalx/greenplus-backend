@@ -101,4 +101,43 @@ export class ContributionRepository extends BaseRepository<Contribution> {
   async findAll(): Promise<Contribution[]> {
     return await this.repository.find();
   }
+
+  async countNumberOfDistinctStudents(): Promise<number> {
+    const { count } = await this.repository
+      .createQueryBuilder('contribution')
+      .select('COUNT(DISTINCT contribution.userId) as count')
+      .getRawOne();
+
+    return Number(count);
+  }
+
+  async countNumberOfDistinctFaculty(): Promise<number> {
+    const { count } = await this.repository
+      .createQueryBuilder('contribution')
+      .select('COUNT(DISTINCT contribution.facultyId) as count')
+      .getRawOne();
+
+    return Number(count);
+  }
+
+  async largestPublishedCountOfSingleFaculty(): Promise<number> {
+    const [{ count }] = await this.repository.query(
+      `select max("cnt") as count from (select count(*) as cnt from contribution where "isPublished" = true group by "facultyId") as "m"`,
+    );
+
+    return Number(count);
+  }
+
+  async newSubmissionsIn7Days(): Promise<number> {
+    let last7Days = new Date();
+    last7Days.setDate(last7Days.getDate() - 7);
+
+    const { count } = await this.repository
+      .createQueryBuilder('contribution')
+      .select('count(*) as count')
+      .where('contribution.createAt > :last7Days', { last7Days: last7Days })
+      .getRawOne();
+
+    return Number(count);
+  }
 }
