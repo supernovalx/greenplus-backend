@@ -90,8 +90,8 @@ export class ContributionService {
     const allowedTypes: string[] = [
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       'application/msword',
-      'image/png',
-      'image/jpeg',
+      // 'image/png',
+      // 'image/jpeg',
     ];
     for (const file of files) {
       if (!allowedTypes.some((type) => file.mimetype === type)) {
