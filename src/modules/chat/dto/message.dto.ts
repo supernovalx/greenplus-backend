@@ -3,7 +3,7 @@ import { Message } from '../entity/message.entity';
 export class MessageDto {
   id: number;
 
-  content: string;
+  message: string;
 
   createdAt: Date;
 
@@ -11,7 +11,7 @@ export class MessageDto {
 
   constructor(message: Message) {
     this.id = message.id;
-    this.content = message.content;
+    this.message = message.content;
     this.senderId = message.senderId;
     this.createdAt = message.createAt;
   }
