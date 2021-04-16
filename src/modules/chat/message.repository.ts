@@ -1,7 +1,5 @@
-import { Cipher } from 'crypto';
 import { max, uniqBy } from 'lodash';
 import { BaseRepository } from 'src/common/base.repository';
-import { PaginatedQueryDto } from 'src/common/dto/paginated-query.dto';
 import { EntityRepository, SelectQueryBuilder } from 'typeorm';
 import { FindAllMessageQueryDto } from './dto/find-all-message.dto';
 import { Message } from './entity/message.entity';
@@ -60,9 +58,9 @@ export class MessageRepository extends BaseRepository<Message> {
     receiverId: number,
     query: FindAllMessageQueryDto,
   ): Promise<[Message[], number]> {
-    const qb: SelectQueryBuilder<Message> = this.repository.createQueryBuilder(
-      'message',
-    );
+    const qb: SelectQueryBuilder<Message> = this.repository
+      .createQueryBuilder('message')
+      .leftJoinAndSelect('message.sender', 'sender');
     // Filters
     if (query.startMessageId) {
       qb.andWhere('message.id < :id', {
