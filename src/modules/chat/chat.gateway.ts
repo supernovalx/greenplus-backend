@@ -116,7 +116,10 @@ export class ChatGateway
           senderId: sender.id,
           senderName: sender.fullName,
         };
-        receiverClient.socket.emit('server_message', serverMessageDto);
+
+        Promise.resolve(() => {
+          receiverClient.socket.emit('server_message', serverMessageDto);
+        });
       }
     }
     // const receiverSocket: Socket | undefined = this.getSocketFromUserId(
