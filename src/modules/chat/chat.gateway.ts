@@ -117,7 +117,7 @@ export class ChatGateway
           senderName: sender.fullName,
         };
 
-        Promise.resolve(() => {
+        new Promise(() => {
           receiverClient.socket.emit('server_message', serverMessageDto);
         });
       }
